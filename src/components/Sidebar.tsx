@@ -32,6 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const dispatch = useOwnDispatch()
   const addChannel = async () => {
     const name = prompt('Enter room name')
+      if(!name) return
     await addDoc(collection(db, 'rooms'), {
       name,
     })
