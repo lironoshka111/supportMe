@@ -57,7 +57,7 @@ const LoginInnerContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 30%;
-  border-radius: 50%;
+  //border-radius: 50%;
   height: 50%;
   background-color: lightpink;
   img {
