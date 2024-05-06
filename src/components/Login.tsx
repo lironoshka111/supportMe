@@ -4,6 +4,7 @@ import { signInWithPopup } from 'firebase/auth'
 import React from 'react'
 import { auth, provider } from '../firebase'
 import Loader from './utilities/Loader'
+import logo from '../images/logo.jpg'
 
 interface LoginProps {
   loading: boolean
@@ -16,19 +17,20 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
     <LoginContainer>
       {loading ? (
         <LoginLoadContainer>
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111615.png" alt="logo" />
+          <img src={logo} alt="logo" />
           <Loader />
         </LoginLoadContainer>
       ) : (
         <LoginInnerContainer>
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111615.png" alt="logo" />
+          <img src={logo} alt="logo" />
           <Button
             onClick={login}
             variant="contained"
             sx={{
-              background: '#4caf50',
+              borderRadius:'40%',
+              backgroundColor: 'pink',
               ':hover': {
-                background: '#00bcd4',
+                background: 'grey',
               },
             }}>
             Login with google
@@ -45,7 +47,7 @@ const LoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: whitesmoke;
+  background-color: #e3d0d3;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
   height: 100vh;
 `
@@ -55,9 +57,11 @@ const LoginInnerContainer = styled.div`
   align-items: center;
   justify-content: center;
   width: 30%;
+  border-radius: 50%;
   height: 50%;
-  background-color: white;
+  background-color: lightpink;
   img {
+    border-radius: 50%;
     object-fit: contain;
     width: 40%;
     margin-bottom: 30px;

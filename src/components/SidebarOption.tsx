@@ -64,7 +64,7 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
   }
   &:hover {
     opacity: 0.9;
-    background: #340e36;
+    background: #b98a92;
   }
-  background: ${(props) => (props.selected ? '#340e36' : 'none')};
+  background: ${(props) => (props.selected ? '#b98a92' : 'none')};
 `

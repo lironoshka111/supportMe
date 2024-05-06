@@ -12,8 +12,8 @@ import Message, { MessageProps } from './Message'
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
-  const divRef = useRef<HTMLDivElement>()
-  const containerRef = useRef<HTMLDivElement>()
+  const divRef = useRef<HTMLDivElement|null>(null)
+  const containerRef = useRef<HTMLDivElement|null>(null)
   const selectedRoom = useOwnSelector((state) => state.channelSlice.selectedRoom)
   let docRef
   if (selectedRoom) {

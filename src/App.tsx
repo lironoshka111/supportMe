@@ -23,9 +23,9 @@ function App() {
                 path="/"
                 element={
                   <HomePage>
-                    <h4>😥</h4>
-                    <h3>You haven't choose the channel yet</h3>
-                    <h5>Other functions don't work now , please select a channel</h5>
+                    <h4>😇</h4>
+                    <h3>Please choose or create your channel</h3>
+                    <h5>Other functions may not work now , please select a channel</h5>
                   </HomePage>
                 }
               />
@@ -45,6 +45,7 @@ export default App
 const AppBody = styled.div`
   display: flex;
   height: calc(100vh - 60px);
+  background-color: #e3d0d3;
 `
 const HomePage = styled.div`
   margin: 10px;

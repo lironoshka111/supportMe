@@ -57,7 +57,7 @@ const HeaderSearch = styled.div`
   align-items: center;
   border: 1px solid gray;
   border-radius: 5px;
-  background: #421f44;
+  background: #e3d0d3;
   & > svg {
     color: gray;
     margin-left: 60px;
