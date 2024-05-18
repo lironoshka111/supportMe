@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from '@emotion/styled'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import CreateIcon from '@mui/icons-material/Create'
@@ -30,13 +30,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [snapshot, loading, error] = useCollection(collection(db, 'rooms'))
   const dispatch = useOwnDispatch()
-  const addChannel = async () => {
-    const name = prompt('Enter room name')
-      if(!name) return
-    await addDoc(collection(db, 'rooms'), {
-      name,
-    })
-  }
+
   const selectChannel = (roomId: string, roomTitle: string) => {
     dispatch(
       roomSelected({
@@ -79,17 +73,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       </SidebarOptionList>
 
       <SidebarOptionList>
-        <SidebarOption Icon={KeyboardArrowDownIcon} title={'Rooms'} />
-      </SidebarOptionList>
-
-      <SidebarOptionList>
-        <SidebarOption
-          Icon={AddIcon}
-          title={'Add Room'}
-          haveAddOption={true}
-          addChannel={addChannel}
-        />
-        {snapshot?.docs.map((roomDoc) => (
+          <SidebarOption Icon={KeyboardArrowDownIcon} title={'Rooms'} />
+          {snapshot?.docs.map((roomDoc) => (
           <SidebarOption
             key={roomDoc.id}
             id={roomDoc.id}

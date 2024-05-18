@@ -12,6 +12,7 @@ interface SidebarOptionProps {
   addChannel?: () => void
   selectChannel?: (roomId: string, roomTitle: string) => void
   id?: string
+  linkToData?: string
 }
 const SidebarOption: React.FC<SidebarOptionProps> = ({
   id = 'is not channel',
