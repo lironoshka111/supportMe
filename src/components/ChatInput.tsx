@@ -1,5 +1,4 @@
 import React, { useState, FormEvent } from 'react'
-import styled from '@emotion/styled'
 import { auth, db } from '../firebase'
 import { addDoc, collection, doc, Timestamp } from 'firebase/firestore'
 import Paper from '@mui/material/Paper'
@@ -14,14 +13,16 @@ interface ChatInputProps {
   roomId: string
   title: string
 }
+
 const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
   const [user] = useAuthState(auth)
-  const [messageValue, setMessageValue] = useState('')
-  const addMessage = (e: FormEvent<HTMLFormElement>) => {
+  const [messageValue, setMessageValue] = useState<string>('')
+
+  const addMessage = async (e: FormEvent<HTMLFormElement>) => {
     if (messageValue) {
       e.preventDefault()
-      const docRef = doc(collection(db, 'rooms'), roomId as string)
-      addDoc(collection(docRef, 'messages'), {
+      const docRef = doc(collection(db, 'rooms'), roomId)
+      await addDoc(collection(docRef, 'messages'), {
         message: messageValue,
         userName: user?.displayName,
         userImage: user?.photoURL,
@@ -30,38 +31,33 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
       setMessageValue('')
     }
   }
+
   return (
-    <ChatInputContainer>
-      <Paper
-        onSubmit={addMessage}
-        component="form"
-        sx={{ p: '10px 10px', display: 'flex', alignItems: 'center', width: '100%' }}>
-        <IconButton sx={{ p: '10px' }} aria-label="menu">
-          <TagFacesIcon />
-        </IconButton>
-        <InputBase
-          sx={{ ml: 1, flex: 1 }}
-          type="text"
-          placeholder={`Message to #${title}`}
-          value={messageValue}
-          onChange={(e) => setMessageValue(e.target.value)}
-          color="secondary"
-          inputProps={{ 'aria-label': 'search google maps' }}
-          autoFocus={true}
-        />
-        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-        <IconButton color="primary" sx={{ p: '10px' }} aria-label="directions" type="submit">
-          <SendIcon />
-        </IconButton>
-      </Paper>
-    </ChatInputContainer>
+      <div className="flex w-[calc(100%-40px)] p-5">
+        <Paper
+            onSubmit={addMessage}
+            component="form"
+            className="p-2.5 flex items-center w-full"
+        >
+          <IconButton className="p-2.5" aria-label="menu">
+            <TagFacesIcon />
+          </IconButton>
+          <InputBase
+              className="ml-2.5 flex-1"
+              type="text"
+              placeholder={`Message to #${title}`}
+              value={messageValue}
+              onChange={(e) => setMessageValue(e.target.value)}
+              inputProps={{ 'aria-label': 'message input' }}
+              autoFocus
+          />
+          <Divider className="h-7 mx-0.5" orientation="vertical" />
+          <IconButton color="primary" className="p-2.5" aria-label="send" type="submit">
+            <SendIcon />
+          </IconButton>
+        </Paper>
+      </div>
   )
 }
 
 export default ChatInput
-
-const ChatInputContainer = styled.div`
-  display: flex;
-  width: calc(100% - 40px);
-  padding: 20px;
-`

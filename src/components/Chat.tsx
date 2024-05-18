@@ -1,4 +1,3 @@
-import styled from '@emotion/styled'
 import React, { useRef, useEffect } from 'react'
 import { useOwnSelector } from '..'
 import ChatInput from './ChatInput'
@@ -12,110 +11,58 @@ import Message, { MessageProps } from './Message'
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
-  const divRef = useRef<HTMLDivElement|null>(null)
-  const containerRef = useRef<HTMLDivElement|null>(null)
+  const divRef = useRef<HTMLDivElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const selectedRoom = useOwnSelector((state) => state.channelSlice.selectedRoom)
   let docRef
   if (selectedRoom) {
     docRef = doc(collection(db, 'rooms'), selectedRoom.id)
   }
   const [messages] = useCollection(
-    docRef && query(collection(docRef, 'messages'), orderBy('timestamp')),
+      docRef && query(collection(docRef, 'messages'), orderBy('timestamp')),
   )
   useEffect(() => {
     if (containerRef.current)
       if (
-        containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
+          containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
           containerRef.current?.clientHeight + 200 ||
-        containerRef.current?.scrollTop === 0
+          containerRef.current?.scrollTop === 0
       ) {
         divRef.current?.scrollIntoView({ behavior: 'smooth' })
         console.log(
-          containerRef.current?.scrollHeight - containerRef.current?.scrollTop,
-          containerRef.current?.clientHeight,
+            containerRef.current?.scrollHeight - containerRef.current?.scrollTop,
+            containerRef.current?.clientHeight,
         )
       }
   }, [messages])
 
   return (
-    <ChatContainer>
-      <ChatInnerContainer>
-        <ChatHeader>
-          <ChatHeaderLeft>
-            <h4>#{selectedRoom?.title}</h4>
-            <IconButton>
-              <StarBorderIcon />
-            </IconButton>
-          </ChatHeaderLeft>
-          <ChatHeaderRight>
-            <IconButton>
-              <HelpOutlineIcon />
-            </IconButton>
-            <h4>Details</h4>
-          </ChatHeaderRight>
-        </ChatHeader>
-        <MessagesList ref={containerRef}>
-          {messages?.docs.map((doc) => (
-            <Message key={doc.id} {...(doc.data() as MessageProps)} />
-          ))}
-          <div ref={divRef}></div>
-        </MessagesList>
-        {selectedRoom?.id && <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />}
-      </ChatInnerContainer>
-    </ChatContainer>
+      <div className="flex flex-[0.85] my-2.5">
+        <div className="m-auto shadow-md flex flex-col flex-[0.4] relative">
+          <div className="flex items-center justify-between p-2.5 border-b border-gray-300">
+            <div className="flex items-center">
+              <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
+              <IconButton>
+                <StarBorderIcon />
+              </IconButton>
+            </div>
+            <div className="flex items-center justify-end">
+              <IconButton>
+                <HelpOutlineIcon />
+              </IconButton>
+              <h4 className="text-lg font-medium">Details</h4>
+            </div>
+          </div>
+          <div className="flex flex-col p-2.5 flex-1 overflow-y-scroll scrollbar-hide" ref={containerRef}>
+            {messages?.docs.map((doc) => (
+                <Message key={doc.id} {...(doc.data() as MessageProps)} />
+            ))}
+            <div ref={divRef}></div>
+          </div>
+          {selectedRoom?.id && <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />}
+        </div>
+      </div>
   )
 }
 
 export default Chat
-const ChatContainer = styled.div`
-  display: flex;
-  flex: 0.85;
-  margin: 10px 0px;
-`
-const ChatInnerContainer = styled.div`
-  margin: 0 auto;
-  box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
-  flex: 0.4;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-`
-const ChatHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 1px solid gray;
-  h4 {
-    font-size: 16px;
-    font-weight: 500;
-  }
-`
-const ChatHeaderLeft = styled.div`
-  display: flex;
-  align-items: center;
-  button {
-    color: black;
-    margin-left: 20px;
-  }
-`
-const ChatHeaderRight = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  button {
-    color: black;
-    margin-right: 10px;
-  }
-`
-const MessagesList = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding: 10px 20px 0px 20px;
-  flex: 1;
-  overflow-y: scroll;
-  scroll-behavior: smooth;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`
