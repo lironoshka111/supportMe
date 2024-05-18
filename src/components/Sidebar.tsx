@@ -75,24 +75,17 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       </SidebarTop>
 
       <SidebarOptionList>
-        <SidebarOption Icon={MessageIcon} title={'Threads'} />
-        <SidebarOption Icon={InboxIcon} title={'Mentions & reactions'} />
-        <SidebarOption Icon={DraftsIcon} title={'Saved items'} />
-        <SidebarOption Icon={BookmarkBorderIcon} title={'Channel browser'} />
-        <SidebarOption Icon={GroupIcon} title={'People & user groups'} />
-        <SidebarOption Icon={AppsIcon} title={'Apps'} />
-        <SidebarOption Icon={FileCopyIcon} title={'File browser'} />
-        <SidebarOption Icon={KeyboardArrowUpIcon} title={'Show less'} />
+        <SidebarOption Icon={MessageIcon} title={'Replies'} />
       </SidebarOptionList>
 
       <SidebarOptionList>
-        <SidebarOption Icon={KeyboardArrowDownIcon} title={'Channels'} />
+        <SidebarOption Icon={KeyboardArrowDownIcon} title={'Rooms'} />
       </SidebarOptionList>
 
       <SidebarOptionList>
         <SidebarOption
           Icon={AddIcon}
-          title={'Add channel'}
+          title={'Add Room'}
           haveAddOption={true}
           addChannel={addChannel}
         />
