@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import SearchIcon from "@mui/icons-material/Search";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase";
@@ -45,7 +44,7 @@ const GeneticDiseaseSearch: React.FC = () => {
       );
       setOpen(true);
     }
-  }, [snapshot, loading, selectedRoom]);
+  }, [snapshot, loading, selectedRoom, value]);
 
   const isRoomExist = (roomName: string) => {
     let isExist = null;
