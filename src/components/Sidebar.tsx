@@ -123,7 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
             title={"Favorites"}
           />
-          {isRoomsOpen &&
+          {isFavoritesOpen &&
             snapshotFavorites?.docs
               .filter((doc) => doc.data().active)
               .map((roomDoc) => (
