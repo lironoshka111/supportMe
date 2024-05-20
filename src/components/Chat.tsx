@@ -123,7 +123,7 @@ const Chat: React.FC<ChatProps> = () => {
         </div>
       </div>
       <div
-        className="flex flex-col p-2.5 flex-1 overflow-y-auto scrollbar-hide"
+        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
         ref={containerRef}
       >
         {messages?.docs.map((doc) => (
