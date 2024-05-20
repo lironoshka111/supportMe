@@ -18,7 +18,6 @@ const GeneticDiseaseSearch: React.FC = () => {
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [value, setValue] = useState<string | null>(null); // Initialize value state
-  const [link, setLink] = useState<string>("");
   const { roomSelected } = useRedux();
 
   const isRoomExist = (roomName: string) => {
@@ -69,7 +68,6 @@ const GeneticDiseaseSearch: React.FC = () => {
       );
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
       const link = response.data[1]?.[0]?.[0]?.[0];
-      setLink(link);
       return link;
     } catch (error) {
       console.error("Error fetching diseases:", error);
