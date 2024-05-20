@@ -1,8 +1,8 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { useOwnDispatch, useOwnSelector } from "..";
 import { Link } from "react-router-dom";
 import { roomSelected } from "../redux/channelSlice";
+import { useRedux } from "../redux/reduxStateContext";
 
 interface SidebarOptionProps {
   Icon: React.FC;
@@ -47,10 +47,7 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   addChannel,
   selectChannel,
 }) => {
-  const dispatch = useOwnDispatch();
-  const selectedRoom = useOwnSelector(
-    (state) => state.channelSlice.selectedRoom,
-  );
+  const { selectedRoom, roomSelected } = useRedux();
   return (
     <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
       <OptionContainer
@@ -60,12 +57,10 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
           if (isChannel) {
             selectChannel && selectChannel(id, title);
           } else {
-            dispatch(
-              roomSelected({
-                id: "",
-                title: "",
-              }),
-            );
+            roomSelected({
+              id: "",
+              title: "",
+            });
           }
         }}
         selected={selectedRoom?.id === id}

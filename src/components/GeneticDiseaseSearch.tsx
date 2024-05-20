@@ -5,10 +5,8 @@ import TextField from "@mui/material/TextField";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase";
-import { useOwnDispatch, useOwnSelector } from "..";
-import { roomSelected } from "../redux/channelSlice";
-import { Alert, Snackbar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useRedux } from "../redux/reduxStateContext";
 
 interface Room {
   name: string;
@@ -19,9 +17,9 @@ const GeneticDiseaseSearch: React.FC = () => {
   const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
-  const dispatch = useOwnDispatch();
   const [value, setValue] = useState<string | null>(null); // Initialize value state
   const [link, setLink] = useState<string>("");
+  const { roomSelected } = useRedux();
 
   const isRoomExist = (roomName: string) => {
     let isExist = null;
@@ -35,16 +33,15 @@ const GeneticDiseaseSearch: React.FC = () => {
     return isExist;
   };
   const addChannel = async (name: string) => {
+    const link = await fetchDiseases(name);
     const res = await addDoc(collection(db, "rooms"), {
       name: name,
       link: link,
     });
-    dispatch(
-      roomSelected({
-        id: res.id as string,
-        title: name as string,
-      }),
-    );
+    roomSelected({
+      id: res.id as string,
+      title: name as string,
+    });
     navigate(`/room/${res.id}`); // Navigate to the newly created room
   };
 
@@ -54,12 +51,10 @@ const GeneticDiseaseSearch: React.FC = () => {
     }
     const room = isRoomExist(value);
     if (!!room) {
-      dispatch(
-        roomSelected({
-          id: room["id"] as string,
-          title: room["name"] as string,
-        }),
-      );
+      roomSelected({
+        id: room["id"] as string,
+        title: room["name"] as string,
+      });
       navigate(`/room/${room["id"]}`); // Navigate to the newly created room
     } else {
       addChannel(value);
@@ -75,6 +70,7 @@ const GeneticDiseaseSearch: React.FC = () => {
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
       const link = response.data[1]?.[0]?.[0]?.[0];
       setLink(link);
+      return link;
     } catch (error) {
       console.error("Error fetching diseases:", error);
     }

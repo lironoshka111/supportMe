@@ -10,7 +10,6 @@ import {
   orderBy,
   getDoc,
 } from "firebase/firestore";
-import { useOwnDispatch, useOwnSelector } from "..";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { IconButton, Tooltip } from "@mui/material";
@@ -18,16 +17,13 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { db } from "../firebase";
 import Message, { MessageProps } from "./Message";
-import { setFavorite } from "../redux/channelSlice";
+import { useRedux } from "../redux/reduxStateContext";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
   const divRef = useRef<HTMLDivElement | null>(null);
-  const dispatch = useOwnDispatch();
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const selectedRoom = useOwnSelector(
-    (state) => state.channelSlice.selectedRoom,
-  );
+  const { selectedRoom, setFavorite } = useRedux();
   const [link, setLink] = useState<string>("");
   let docRef;
 
@@ -68,7 +64,7 @@ const Chat: React.FC<ChatProps> = () => {
   }, [selectedRoom]);
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
-    dispatch(setFavorite(active));
+    setFavorite(active);
     const favoritesRef = collection(db, "favorites");
     const q = query(favoritesRef, where("roomId", "==", selectedRoom?.id));
 
@@ -110,7 +106,7 @@ const Chat: React.FC<ChatProps> = () => {
         </div>
         <div className="flex items-center justify-end">
           <Tooltip
-            title="click to get more details and medicak information"
+            title="click to get more details and medical information"
             arrow
           >
             <IconButton

@@ -1,29 +1,18 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './index.css'
-import App from './App'
-import { BrowserRouter } from 'react-router-dom'
-import { Provider } from 'react-redux'
-import { configureStore } from '@reduxjs/toolkit'
-import userSlice from './redux/userSlice'
-import channelSlice from './redux/channelSlice'
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
+// index.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { ReduxProvider } from "./redux/reduxStateContext";
+import { BrowserRouter } from "react-router-dom";
+import "./index.css";
 
-const store = configureStore({
-  reducer: {
-    userSlice,
-    channelSlice,
-  },
-})
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement,
+);
 root.render(
   <BrowserRouter>
-    <Provider store={store}>
+    <ReduxProvider>
       <App />
-    </Provider>
+    </ReduxProvider>
   </BrowserRouter>,
-)
-
-const state = store.getState()
-export const useOwnSelector: TypedUseSelectorHook<typeof state> = useSelector
-export const useOwnDispatch: () => typeof store.dispatch = useDispatch
+);

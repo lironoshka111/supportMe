@@ -7,10 +7,8 @@ import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { addDoc, collection } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { db } from "../firebase";
-import { useOwnDispatch } from "..";
-import { roomSelected } from "../redux/channelSlice";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
 import Alert from "@mui/material/Alert";
@@ -18,6 +16,7 @@ import { AlertTitle, Snackbar } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import { useRedux } from "../redux/reduxStateContext";
 
 interface SidebarProps {
   user: User;
@@ -29,8 +28,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   );
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
-  const dispatch = useOwnDispatch();
   const [open, setOpen] = useState(false);
+  const { roomSelected } = useRedux();
+
   const handleClose = (
     event: React.SyntheticEvent | Event,
     reason?: string,
@@ -48,12 +48,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   }, [snapshot]);
 
   const selectChannel = (roomId: string, roomTitle: string) => {
-    dispatch(
-      roomSelected({
-        id: roomId,
-        title: roomTitle,
-      }),
-    );
+    roomSelected({
+      id: roomId,
+      title: roomTitle,
+    });
   };
   return (
     <>
