@@ -1,9 +1,10 @@
 export interface SelectedRoomType {
-    id: string
-    title: string
-    linkToData?: string
+  id: string;
+  title: string;
+  linkToData?: string;
+  favorite?: boolean;
 }
 export type reduxState = {
-    user: null | any
-    selectedRoom: null | SelectedRoomType
-}
+  user: null | any;
+  selectedRoom: null | SelectedRoomType;
+};

@@ -1,18 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import CreateIcon from "@mui/icons-material/Create";
-import SidebarOption from "./SidebarOption";
+import SidebarOption, { OptionContainer } from "./SidebarOption";
 import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import InboxIcon from "@mui/icons-material/Inbox";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import GroupIcon from "@mui/icons-material/Group";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
 import TagIcon from "@mui/icons-material/Tag";
-import AppsIcon from "@mui/icons-material/Apps";
-import AddIcon from "@mui/icons-material/Add";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "../firebase";
@@ -21,15 +14,38 @@ import { roomSelected } from "../redux/channelSlice";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
 import Alert from "@mui/material/Alert";
-import { AlertTitle } from "@mui/material";
+import { AlertTitle, Snackbar } from "@mui/material";
 import { User } from "firebase/auth";
+import { useBoolean } from "ahooks";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 interface SidebarProps {
   user: User;
 }
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
+  const [snapshotFavorites, isLoadingFavorites, errorFavorites] = useCollection(
+    collection(db, "favorites"),
+  );
+  const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
+  const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const dispatch = useOwnDispatch();
+  const [open, setOpen] = useState(false);
+  const handleClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (loading || !snapshot?.size) return;
+    setOpen(true);
+  }, [snapshot]);
 
   const selectChannel = (roomId: string, roomTitle: string) => {
     dispatch(
@@ -40,67 +56,108 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     );
   };
   return (
-    <SidebarContainer>
-      {error && (
-        <AlertWrapper>
-          <Alert variant="filled" severity="error">
-            <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
-              Error occured
-            </AlertTitle>
-            <p>Something went wrong , please check if all is right!</p>
-          </Alert>
-        </AlertWrapper>
-      )}
-      {loading && (
-        <AlertWrapper>
-          <Alert variant="filled" severity="info">
-            <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
-              Loading...
-            </AlertTitle>
+    <>
+      <SidebarContainer>
+        {(error || errorFavorites) && (
+          <AlertWrapper>
+            <Alert variant="filled" severity="error">
+              <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
+                Error occured
+              </AlertTitle>
+              <p>Something went wrong , please check if all is right!</p>
+            </Alert>
+          </AlertWrapper>
+        )}
+        {(loading || isLoadingFavorites) && (
+          <AlertWrapper>
+            <Alert variant="filled" severity="info">
+              <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
+                Loading...
+              </AlertTitle>
+              <p>
+                Just wait a second , we need to load something for your comfort
+              </p>
+            </Alert>
+          </AlertWrapper>
+        )}
+        <SidebarTop>
+          <SidebarInfo>
+            <h4>AttachedSoul HQ</h4>
             <p>
-              Just wait a second , we need to load something for your comfort
+              <FiberManualRecordIcon
+                sx={{ fontSize: "14px", color: "green" }}
+              />
+              {user.displayName}
             </p>
-          </Alert>
-        </AlertWrapper>
-      )}
-      <SidebarTop>
-        <SidebarInfo>
-          <h4>AttachedSoul HQ</h4>
-          <p>
-            <FiberManualRecordIcon sx={{ fontSize: "14px", color: "green" }} />
-            {user.displayName}
-          </p>
-        </SidebarInfo>
-        <CreateIcon
-          sx={{ background: "white", padding: "5px", borderRadius: "17px" }}
-        />
-      </SidebarTop>
-
-      <SidebarOptionList>
-        <SidebarOption Icon={MessageIcon} title={"Replies"} />
-      </SidebarOptionList>
-
-      <SidebarOptionList>
-        <SidebarOption Icon={KeyboardArrowDownIcon} title={"Rooms"} />
-        {snapshot?.docs.map((roomDoc) => (
-          <SidebarOption
-            key={roomDoc.id}
-            id={roomDoc.id}
-            Icon={TagIcon}
-            title={roomDoc.data().name as string}
-            isChannel={true}
-            selectChannel={selectChannel}
+          </SidebarInfo>
+          <CreateIcon
+            sx={{ background: "white", padding: "5px", borderRadius: "17px" }}
           />
-        ))}
-      </SidebarOptionList>
-    </SidebarContainer>
+        </SidebarTop>
+
+        <SidebarOptionList>
+          <SidebarOption Icon={MessageIcon} title={"Replies"} />
+        </SidebarOptionList>
+
+        <SidebarOptionList>
+          <OptionContainer
+            onClick={toggleRooms}
+            Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+            title={"Recent Rooms"}
+          />
+          {isRoomsOpen &&
+            snapshot?.docs.map((roomDoc) => (
+              <SidebarOption
+                key={roomDoc.id}
+                id={roomDoc.id}
+                Icon={TagIcon}
+                title={roomDoc.data().name as string}
+                isChannel={true}
+                selectChannel={selectChannel}
+              />
+            ))}
+        </SidebarOptionList>
+
+        <SidebarOptionList>
+          <OptionContainer
+            RightIcon={StarBorderIcon}
+            onClick={toggleFavorites}
+            Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+            title={"Favorites"}
+          />
+          {isRoomsOpen &&
+            snapshotFavorites?.docs
+              .filter((doc) => doc.data().active)
+              .map((roomDoc) => (
+                <SidebarOption
+                  key={roomDoc.data().roomId as string}
+                  id={roomDoc.data().roomId as string}
+                  Icon={TagIcon}
+                  title={roomDoc.data().title as string}
+                  isChannel={true}
+                  selectChannel={selectChannel}
+                />
+              ))}
+        </SidebarOptionList>
+      </SidebarContainer>
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert
+          onClose={handleClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Room selected successfully!
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
 export default Sidebar;
 
 const SidebarContainer = styled.div`
-  width: 1/3;
+  width: 260px;
   display: flex;
   flex-direction: column;
   background: var(--slack-color);
@@ -135,5 +192,6 @@ const SidebarOptionList = styled.div`
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid #49274b;
-  padding: 10px 0px;
+  gap: 2px;
+  padding: 5px 0px;
 `;

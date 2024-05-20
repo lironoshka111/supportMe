@@ -1,21 +1,45 @@
-import React from 'react'
-import styled from '@emotion/styled'
-import { useOwnDispatch, useOwnSelector } from '..'
-import { Link } from 'react-router-dom'
-import { roomSelected } from '../redux/channelSlice'
+import React from "react";
+import styled from "@emotion/styled";
+import { useOwnDispatch, useOwnSelector } from "..";
+import { Link } from "react-router-dom";
+import { roomSelected } from "../redux/channelSlice";
 
 interface SidebarOptionProps {
-  Icon: React.FC
-  title: string
-  haveAddOption?: boolean
-  isChannel?: boolean
-  addChannel?: () => void
-  selectChannel?: (roomId: string, roomTitle: string) => void
-  id?: string
-  linkToData?: string
+  Icon: React.FC;
+  title: string;
+  haveAddOption?: boolean;
+  isChannel?: boolean;
+  addChannel?: () => void;
+  selectChannel?: (roomId: string, roomTitle: string) => void;
+  id?: string;
+  linkToData?: string;
 }
+
+export const OptionContainer = ({
+  title,
+  Icon,
+  onClick,
+  selected,
+  RightIcon,
+}: {
+  title: string;
+  Icon: React.FC;
+  onClick: () => void;
+  selected?: boolean;
+  RightIcon?: React.FC;
+}) => {
+  return (
+    <div className="flex gap-1">
+      <SidebarOptionContainer onClick={onClick} selected={selected}>
+        {Icon && <Icon />}
+        <p>{title}</p>
+        {RightIcon && <RightIcon />}
+      </SidebarOptionContainer>
+    </div>
+  );
+};
 const SidebarOption: React.FC<SidebarOptionProps> = ({
-  id = 'is not channel',
+  id = "is not channel",
   Icon,
   title,
   haveAddOption = false,
@@ -23,37 +47,46 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   addChannel,
   selectChannel,
 }) => {
-  const dispatch = useOwnDispatch()
-  const selectedRoom = useOwnSelector((state) => state.channelSlice.selectedRoom)
+  const dispatch = useOwnDispatch();
+  const selectedRoom = useOwnSelector(
+    (state) => state.channelSlice.selectedRoom,
+  );
   return (
-    <Link to={`${id === 'is not channel' ? '/' : `/room/${id}`}`}>
-      <SidebarOptionContainer
+    <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
+      <OptionContainer
+        title={title}
+        Icon={Icon}
+        onClick={() => {
+          if (isChannel) {
+            selectChannel && selectChannel(id, title);
+          } else {
+            dispatch(
+              roomSelected({
+                id: "",
+                title: "",
+              }),
+            );
+          }
+        }}
         selected={selectedRoom?.id === id}
-        onClick={
-          haveAddOption
-            ? addChannel
-            : isChannel && selectChannel && id
-            ? () => selectChannel(id, title)
-            : () => {
-                dispatch(roomSelected({ id: '', title: '' }))
-              }
-        }>
-        {Icon && <Icon />}
-        <p>{title}</p>
-      </SidebarOptionContainer>
+      />
     </Link>
-  )
-}
+  );
+};
 
-export default SidebarOption
+export default SidebarOption;
 type SidebarOptionContainerProps = {
-  selected: boolean
-}
+  selected?: boolean;
+};
+
 const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
   cursor: pointer;
   padding: 5px 10px;
   display: flex;
   align-items: center;
+  border-radius: 15px;
+  user-select: none;
+  width: 95%;
   gap: 10px;
   & > svg {
     color: white;
@@ -67,5 +100,5 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
     opacity: 0.9;
     background: #b98a92;
   }
-  background: ${(props) => (props.selected ? '#b98a92' : 'none')};
-`
+  background: ${(props) => (props.selected ? "#b98a92" : "none")};
+`;

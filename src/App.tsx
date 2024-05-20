@@ -7,12 +7,13 @@ import Chat from "./components/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login from "./components/Login";
+import AboutPage from "./components/AboutPage";
 
 function App() {
   const [user, loading] = useAuthState(auth);
 
   return (
-    <div className="App ">
+    <AppContainer>
       {user ? (
         <>
           <Header user={user} />
@@ -26,31 +27,38 @@ function App() {
                     <h4>😇</h4>
                     <h3>Please choose or create your channel</h3>
                     <h5>
-                      Other functions may not work now , please select a channel
+                      Other functions may not work now, please select a channel
                     </h5>
                   </HomePage>
                 }
               />
               <Route path="/room/:roomId" element={<Chat />} />
+              <Route path="/about" element={<AboutPage />} />
             </Routes>
           </AppBody>
         </>
       ) : (
         <Login loading={loading} />
       )}
-    </div>
+    </AppContainer>
   );
 }
 
 export default App;
+
+const AppContainer = styled.div`
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
 
 const AppBody = styled.div`
   display: flex;
   height: calc(100vh - 60px);
   background-color: #e3d0d3;
 `;
+
 const HomePage = styled.div`
-  //margin: 10px;
   flex: 0.8;
   display: flex;
   flex-direction: column;

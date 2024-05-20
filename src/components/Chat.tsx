@@ -1,32 +1,44 @@
 import React, { useRef, useEffect, useState } from "react";
-import { useOwnSelector } from "..";
+import {
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  orderBy,
+  getDoc,
+} from "firebase/firestore";
+import { useOwnDispatch, useOwnSelector } from "..";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { IconButton } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  orderBy,
-  query,
-} from "firebase/firestore";
 import { db } from "../firebase";
 import Message, { MessageProps } from "./Message";
 import { useBoolean } from "ahooks";
+import { setFavorite } from "../redux/channelSlice";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
   const divRef = useRef<HTMLDivElement | null>(null);
+  const dispatch = useOwnDispatch();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const selectedRoom = useOwnSelector(
     (state) => state.channelSlice.selectedRoom,
   );
-  const [favorite, { toggle: toggleFavorite }] = useBoolean(false);
+  debugger;
   const [link, setLink] = useState<string>("");
   let docRef;
+
+  useEffect(() => {
+    if (selectedRoom) {
+      debugger;
+      docRef = doc(collection(db, "rooms"), selectedRoom.id);
+    }
+  }, [selectedRoom]);
   if (selectedRoom) {
     docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }
@@ -58,25 +70,43 @@ const Chat: React.FC<ChatProps> = () => {
     getRoomLink();
   }, [selectedRoom]);
 
-  const changeFavorite = async (active = true) => {
-    if (active)
-      await addDoc(collection(db, "favorite"), {
+  const toggleFavorite = async (active = !selectedRoom?.favorite) => {
+    dispatch(setFavorite(active));
+    const favoritesRef = collection(db, "favorites");
+    const q = query(favoritesRef, where("roomId", "==", selectedRoom?.id));
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // Add a new document if it doesn't exist
+      await addDoc(favoritesRef, {
         roomId: selectedRoom?.id,
+        active: active,
         title: selectedRoom?.title,
       });
-    else {
-      // docRef = doc(collection(db, "favorite");
+    } else {
+      // Get the first document from the query snapshot
+      const document = querySnapshot.docs[0];
+      const docRef = doc(db, "favorites", document.id);
+      const docSnapshot = await getDoc(docRef);
+
+      if (docSnapshot.exists()) {
+        // Update the existing document
+        await updateDoc(docRef, {
+          active: active,
+        });
+      }
     }
   };
 
   return (
-    <div className="m-auto shadow-md flex flex-col  px-10 h-full flex-grow">
+    <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
       <div className="flex items-center justify-between  border-b border-gray-300">
         <div className="flex items-center">
           <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
           <IconButton
-            color={favorite ? "warning" : undefined}
-            onClick={toggleFavorite}
+            color={selectedRoom?.favorite ? "warning" : undefined}
+            onClick={() => toggleFavorite()}
           >
             <StarBorderIcon />
           </IconButton>

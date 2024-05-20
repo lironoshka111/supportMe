@@ -9,42 +9,17 @@ import { useOwnDispatch, useOwnSelector } from "..";
 import { roomSelected } from "../redux/channelSlice";
 import { Alert, Snackbar } from "@mui/material";
 
+interface Room {
+  name: string;
+  id: string;
+}
 const GeneticDiseaseSearch: React.FC = () => {
   const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const dispatch = useOwnDispatch();
   const [value, setValue] = useState<string | null>(null); // Initialize value state
-  const selectedRoom = useOwnSelector(
-    (state) => state.channelSlice.selectedRoom,
-  );
-  const [open, setOpen] = useState(false);
   const [link, setLink] = useState<string>("");
-
-  const handleClose = (
-    event: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpen(false);
-  };
-
-  useEffect(() => {
-    if (loading || !value || selectedRoom?.title === value) return;
-    const room = isRoomExist(value);
-    if (!!room) {
-      dispatch(
-        roomSelected({
-          id: room["id"] as string,
-          title: room["name"] as string,
-        }),
-      );
-      setOpen(true);
-    }
-  }, [snapshot, loading, selectedRoom, value]);
 
   const isRoomExist = (roomName: string) => {
     let isExist = null;
@@ -57,7 +32,6 @@ const GeneticDiseaseSearch: React.FC = () => {
     }
     return isExist;
   };
-
   const addChannel = async (name: string) => {
     const res = await addDoc(collection(db, "rooms"), {
       name: name,
@@ -86,7 +60,7 @@ const GeneticDiseaseSearch: React.FC = () => {
     } else {
       addChannel(value);
     }
-  }, [value]);
+  }, [value, snapshot]);
 
   const fetchDiseases = async (query: string) => {
     if (!query) return;
@@ -105,7 +79,7 @@ const GeneticDiseaseSearch: React.FC = () => {
   return (
     <>
       <Autocomplete
-        className="w-full"
+        className="w-full h-full"
         freeSolo
         options={options.map((option) => option?.[0])}
         inputValue={inputValue}
@@ -125,16 +99,6 @@ const GeneticDiseaseSearch: React.FC = () => {
           />
         )}
       />
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          Room selected successfully!
-        </Alert>
-      </Snackbar>
     </>
   );
 };
