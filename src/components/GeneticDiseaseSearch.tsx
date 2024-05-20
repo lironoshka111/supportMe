@@ -8,12 +8,14 @@ import { db } from "../firebase";
 import { useOwnDispatch, useOwnSelector } from "..";
 import { roomSelected } from "../redux/channelSlice";
 import { Alert, Snackbar } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Room {
   name: string;
   id: string;
 }
 const GeneticDiseaseSearch: React.FC = () => {
+  const navigate = useNavigate();
   const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
@@ -26,7 +28,7 @@ const GeneticDiseaseSearch: React.FC = () => {
     if (snapshot) {
       snapshot.docs.map((doc) => {
         if (doc.data().name === roomName) {
-          isExist = { name: doc.data().name, id: doc.id };
+          isExist = { name: doc.data().name, id: doc.id } as Room;
         }
       });
     }
@@ -43,6 +45,7 @@ const GeneticDiseaseSearch: React.FC = () => {
         title: name as string,
       }),
     );
+    navigate(`/room/${res.id}`); // Navigate to the newly created room
   };
 
   useEffect(() => {
@@ -57,6 +60,7 @@ const GeneticDiseaseSearch: React.FC = () => {
           title: room["name"] as string,
         }),
       );
+      navigate(`/room/${room["id"]}`); // Navigate to the newly created room
     } else {
       addChannel(value);
     }
@@ -86,6 +90,12 @@ const GeneticDiseaseSearch: React.FC = () => {
         onInputChange={(event, newInputValue) => {
           setInputValue(newInputValue);
           fetchDiseases(newInputValue);
+        }}
+        onClose={() => {
+          if (!value) return;
+          //  const isExist = isRoomExist(value) as unknown as Room;
+          //if (!isExist?.id) return;
+          // return navigate(`/room/${isExist?.id}`);
         }}
         value={value} // Set value prop to controlled state
         onChange={(event: any, newValue: string | null) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Avatar } from "@mui/material";
+import { Avatar, Tooltip } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { signOut, User } from "firebase/auth";
@@ -17,11 +17,13 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <div className="flex items-center w-full p-2.5 bg-slack-color overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
-        <Avatar
-          className="ml-5 cursor-pointer hover:opacity-80"
-          onClick={() => signOut(auth)}
-          src={user.photoURL as string}
-        />
+        <Tooltip title={`Logout`} arrow>
+          <Avatar
+            className="ml-5 cursor-pointer hover:opacity-80"
+            onClick={() => signOut(auth)}
+            src={user.photoURL as string}
+          />
+        </Tooltip>
         <AccessTimeIcon className="cursor-pointer text-white mr-5" />
       </div>
 
@@ -33,7 +35,9 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         className="flex justify-end flex-grow"
         onClick={() => navigate("/about")}
       >
-        <HelpOutlineIcon className="cursor-pointer text-white mr-5" />
+        <Tooltip title="About page" arrow>
+          <HelpOutlineIcon className="cursor-pointer text-white mr-5" />
+        </Tooltip>
       </div>
     </div>
   );

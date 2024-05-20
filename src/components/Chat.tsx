@@ -13,12 +13,11 @@ import {
 import { useOwnDispatch, useOwnSelector } from "..";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import { IconButton } from "@mui/material";
+import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { db } from "../firebase";
 import Message, { MessageProps } from "./Message";
-import { useBoolean } from "ahooks";
 import { setFavorite } from "../redux/channelSlice";
 
 interface ChatProps {}
@@ -29,13 +28,11 @@ const Chat: React.FC<ChatProps> = () => {
   const selectedRoom = useOwnSelector(
     (state) => state.channelSlice.selectedRoom,
   );
-  debugger;
   const [link, setLink] = useState<string>("");
   let docRef;
 
   useEffect(() => {
     if (selectedRoom) {
-      debugger;
       docRef = doc(collection(db, "rooms"), selectedRoom.id);
     }
   }, [selectedRoom]);
@@ -112,15 +109,20 @@ const Chat: React.FC<ChatProps> = () => {
           </IconButton>
         </div>
         <div className="flex items-center justify-end">
-          <IconButton
-            onClick={() => {
-              if (link) {
-                window.open(link);
-              }
-            }}
+          <Tooltip
+            title="click to get more details and medicak information"
+            arrow
           >
-            <HelpOutlineIcon />
-          </IconButton>
+            <IconButton
+              onClick={() => {
+                if (link) {
+                  window.open(link);
+                }
+              }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
+          </Tooltip>
           <h4 className="text-lg font-medium">Details</h4>
         </div>
       </div>
