@@ -8,6 +8,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login from "./components/Login";
 import AboutPage from "./components/AboutPage";
+import MembersPage from "./components/MembersPage";
 
 function App() {
   const [user, loading] = useAuthState(auth);
@@ -33,7 +34,7 @@ function App() {
                 }
               />
               <Route path="/room/:roomId" element={<Chat />} />
-              <Route path="/about" element={<AboutPage />} />
+              <Route path="/room/:roomId/members" element={<MembersPage />} />
             </Routes>
           </AppBody>
         </>

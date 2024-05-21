@@ -12,12 +12,14 @@ import {
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import PeopleIcon from "@mui/icons-material/People";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { db } from "../firebase";
 import Message, { MessageProps } from "./Message";
 import { useRedux } from "../redux/reduxStateContext";
+import { useNavigate } from "react-router-dom";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
@@ -25,6 +27,8 @@ const Chat: React.FC<ChatProps> = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { selectedRoom, setFavorite } = useRedux();
   const [link, setLink] = useState<string>("");
+  const navigate = useNavigate();
+
   let docRef;
 
   useEffect(() => {
@@ -104,7 +108,17 @@ const Chat: React.FC<ChatProps> = () => {
             <StarBorderIcon />
           </IconButton>
         </div>
-        <div className="flex items-center justify-end">
+        <div className="flex  gap-2 items-center justify-end">
+          <Tooltip title="group members" arrow>
+            <IconButton
+              onClick={() => {
+                navigate(`/room/${selectedRoom?.id}/members`);
+              }}
+            >
+              <PeopleIcon />
+            </IconButton>
+          </Tooltip>
+
           <Tooltip
             title="click to get more details and medical information"
             arrow
