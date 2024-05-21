@@ -46,7 +46,7 @@ const MembersPage = () => {
               </div>
               <div>{user?.displayName}</div>
               <div>{user?.email}</div>
-              {!isAdmin ? (
+              {isAdmin ? (
                 <Button variant="outlined" startIcon={<DeleteIcon />}>
                   Delete
                 </Button>
