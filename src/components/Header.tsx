@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Avatar, Tooltip } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
@@ -6,6 +6,7 @@ import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import GeneticDiseaseSearch from "./GeneticDiseaseSearch";
 import { useNavigate } from "react-router-dom";
+import GapSlider from "./GapSlider";
 
 interface HeaderProps {
   user: User;
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const navigate = useNavigate();
+  const [gapValue, setGapValue] = useState<number>(50);
 
   return (
     <div className="flex items-center w-full p-2.5 bg-slack-color overflow-hidden">
@@ -27,8 +29,9 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         <AccessTimeIcon className="cursor-pointer text-white mr-5" />
       </div>
 
-      <div className="flex items-center flex-grow mx-5 border border-gray-500 rounded bg-gray-200">
+      <div className="flex flex-grow justify-center items-center m-5 gap-2">
         <GeneticDiseaseSearch />
+        <GapSlider value={gapValue} onChange={setGapValue} />
       </div>
 
       <div

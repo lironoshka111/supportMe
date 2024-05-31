@@ -17,6 +17,7 @@ import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { useRedux } from "../redux/reduxStateContext";
+import GroupFormModal from "./GroupFormModal";
 
 interface SidebarProps {
   user: User;
@@ -28,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   );
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
+  const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
   const { roomSelected } = useRedux();
 
@@ -94,7 +96,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         </SidebarTop>
 
         <SidebarOptionList>
-          <SidebarOption Icon={MessageIcon} title={"Replies"} />
+          <OptionContainer
+            Icon={MessageIcon}
+            title={"Add New Group"}
+            onClick={setNewRoomModalOpen.setTrue}
+          />
         </SidebarOptionList>
 
         <SidebarOptionList>
@@ -148,6 +154,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           Room selected successfully!
         </Alert>
       </Snackbar>
+      <GroupFormModal
+        open={newRoomModalOpen}
+        setOpen={setNewRoomModalOpen.set}
+      />
     </>
   );
 };

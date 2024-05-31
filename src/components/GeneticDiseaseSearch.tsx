@@ -75,7 +75,7 @@ const GeneticDiseaseSearch: React.FC = () => {
   };
 
   return (
-    <>
+    <div className="flex bg-white w-full p-2 rounded-xl">
       <Autocomplete
         className="w-full h-full"
         freeSolo
@@ -98,12 +98,13 @@ const GeneticDiseaseSearch: React.FC = () => {
         renderInput={(params) => (
           <TextField
             {...params}
+            className="bg-white rounded-lg"
             label="Search Genetic Diseases"
             variant="outlined"
           />
         )}
       />
-    </>
+    </div>
   );
 };
 

@@ -55,7 +55,7 @@ const AppContainer = styled.div`
 
 const AppBody = styled.div`
   display: flex;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 70px);
   background-color: #e3d0d3;
 `;
 
