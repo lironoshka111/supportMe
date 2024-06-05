@@ -82,17 +82,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         )}
         <SidebarTop>
           <SidebarInfo>
-            <h4>AttachedSoul HQ</h4>
             <p>
               <FiberManualRecordIcon
-                sx={{ fontSize: "14px", color: "green" }}
+                sx={{ fontSize: "16px", color: "green" }}
               />
               {user.displayName}
             </p>
           </SidebarInfo>
-          <CreateIcon
-            sx={{ background: "white", padding: "5px", borderRadius: "17px" }}
-          />
+          {/*<CreateIcon*/}
+          {/*  sx={{ background: "white", padding: "5px", borderRadius: "17px" }}*/}
+          {/*/>*/}
         </SidebarTop>
 
         <SidebarOptionList>

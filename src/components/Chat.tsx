@@ -119,10 +119,7 @@ const Chat: React.FC<ChatProps> = () => {
             </IconButton>
           </Tooltip>
 
-          <Tooltip
-            title="click to get more details and medical information"
-            arrow
-          >
+          <Tooltip title="Details" arrow>
             <IconButton
               onClick={() => {
                 if (link) {
@@ -133,7 +130,6 @@ const Chat: React.FC<ChatProps> = () => {
               <HelpOutlineIcon />
             </IconButton>
           </Tooltip>
-          <h4 className="text-lg font-medium">Details</h4>
         </div>
       </div>
       <div

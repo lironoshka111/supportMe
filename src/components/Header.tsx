@@ -47,14 +47,13 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <div className="flex items-center w-full p-2.5 bg-slack-color overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
-        <Tooltip title={`Logout`} arrow>
+        <Tooltip title={`Menu`} arrow>
           <Avatar
             className="ml-5 cursor-pointer hover:opacity-80"
             onClick={handleMenuOpen}
             src={user.photoURL as string}
           />
         </Tooltip>
-        <AccessTimeIcon className="cursor-pointer text-white mr-5" />
       </div>
 
       <div className="flex flex-grow justify-center items-center m-5 gap-2">
@@ -70,10 +69,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           <IconButton
             onClick={() => navigate("/about")}
             sx={{
-              borderRadius: "75%",
-              padding: 0,
               shadow: 1,
-              width: "80.33%", // Ensures three avatars per line
+              width: "15%", // Ensures three avatars per line
               display: "flex",
               justifyContent: "center",
             }}
