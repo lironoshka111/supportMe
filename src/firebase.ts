@@ -1,19 +1,17 @@
-import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "@firebase/firestore";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAexVy59-pSAeG2f92zaFjrwfP4clCmBMI",
-  authDomain: "supportme-ced41.firebaseapp.com",
-  projectId: "supportme-ced41",
-  storageBucket: "supportme-ced41.appspot.com",
-  messagingSenderId: "274960225547",
-  appId: "1:274960225547:web:d64ab6474810f1f44bbe0e",
-  measurementId: "G-93K4ZDMNVG"
-}
+  apiKey: "AIzaSyC9OX0WWG-aF4HuQ8dwKuXFNECii-clsxc",
+  authDomain: "support-me-1.firebaseapp.com",
+  projectId: "support-me-1",
+  storageBucket: "support-me-1.appspot.com",
+  messagingSenderId: "424818207732",
+  appId: "1:424818207732:web:3a2aa20a95f0f05e7be7a1",
+};
 
-
-const app = initializeApp(firebaseConfig)
-export const db = getFirestore(app)
-export const auth = getAuth(app)
-export const provider = new GoogleAuthProvider()
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();

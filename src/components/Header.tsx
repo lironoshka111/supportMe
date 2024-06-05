@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
       <div className="flex flex-grow justify-center items-center m-5 gap-2">
         <GeneticDiseaseSearch />
-        <GapSlider value={gapValue} onChange={setGapValue} />
+        {/*<GapSlider value={gapValue} onChange={setGapValue} />*/}
       </div>
 
       <div
