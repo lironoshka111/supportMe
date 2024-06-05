@@ -1,6 +1,6 @@
 // GroupFormModal.tsx
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Box,
@@ -10,6 +10,12 @@ import {
   Switch,
   FormControlLabel,
 } from "@mui/material";
+import { addDoc, collection } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import { roomSelected } from "../redux/channelSlice";
+import { useNavigate } from "react-router-dom";
+import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -17,26 +23,50 @@ interface GroupFormModalProps {
 }
 
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
-  const [groupName, setGroupName] = useState("");
+  const [user] = useAuthState(auth);
   const [maxParticipants, setMaxParticipants] = useState(1);
   const [location, setLocation] = useState("");
   const [isOnline, setIsOnline] = useState(false);
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
+  const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
+  const navigate = useNavigate();
   const handleSave = () => {
     // Handle save logic here
-    console.log({
-      groupName,
-      maxParticipants,
-      location,
-      isOnline,
-      contactNumber,
-    });
+    addChannel();
     setOpen(false);
   };
 
   const handleCancel = () => {
     setOpen(false);
+  };
+
+  const resetForm = () => {
+    setMaxParticipants(1);
+    setLocation("");
+    setIsOnline(false);
+    setContactNumber("");
+    setDescription("");
+    setDiseaseDetails(undefined);
+  };
+
+  const addChannel = async () => {
+    const res = await addDoc(collection(db, "rooms"), {
+      name: diseaseDetails?.name,
+      link: diseaseDetails?.link,
+      maxParticipants,
+      location,
+      isOnline,
+      contactNumber,
+      adminId: user?.uid,
+    });
+    roomSelected({
+      id: res.id as string,
+      title: diseaseDetails?.name as string,
+    });
+    navigate(`/room/${res.id}`); // Navigate to the newly created rooms
+    debugger;
+    resetForm();
   };
 
   return (
@@ -56,13 +86,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
         <Typography variant="h6" component="h2">
           Group Details
         </Typography>
-        <TextField
-          fullWidth
-          label="Group Name"
-          value={groupName}
-          onChange={(e) => setGroupName(e.target.value)}
-          margin="normal"
-        />
+        <GeneticDiseaseSearch setDiseaseDetails={setDiseaseDetails} />
         <TextField
           fullWidth
           label="Max Number of Participants"

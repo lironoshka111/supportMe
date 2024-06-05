@@ -12,53 +12,35 @@ interface Room {
   name: string;
   id: string;
 }
-const GeneticDiseaseSearch: React.FC = () => {
-  const navigate = useNavigate();
-  const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
+
+export interface diseaseDetails {
+  name: string;
+  link: string;
+}
+
+export interface GeneticDiseaseSearchProps {
+  setDiseaseDetails?: (diseaseDetails: diseaseDetails) => void;
+}
+
+const GeneticDiseaseSearch = ({
+  setDiseaseDetails,
+}: GeneticDiseaseSearchProps) => {
+  // const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [value, setValue] = useState<string | null>(null); // Initialize value state
-  const { roomSelected } = useRedux();
 
-  const isRoomExist = (roomName: string) => {
-    let isExist = null;
-    if (snapshot) {
-      snapshot.docs.map((doc) => {
-        if (doc.data().name === roomName) {
-          isExist = { name: doc.data().name, id: doc.id } as Room;
-        }
-      });
-    }
-    return isExist;
-  };
-  const addChannel = async (name: string) => {
-    const link = await fetchDiseases(name);
-    const res = await addDoc(collection(db, "rooms"), {
-      name: name,
-      link: link,
-    });
-    roomSelected({
-      id: res.id as string,
-      title: name as string,
-    });
-    navigate(`/room/${res.id}`); // Navigate to the newly created room
-  };
-
-  useEffect(() => {
-    if (!value) {
-      return;
-    }
-    const room = isRoomExist(value);
-    if (!!room) {
-      roomSelected({
-        id: room["id"] as string,
-        title: room["name"] as string,
-      });
-      navigate(`/room/${room["id"]}`); // Navigate to the newly created room
-    } else {
-      addChannel(value);
-    }
-  }, [value, snapshot]);
+  // const isRoomExist = (roomName: string) => {
+  //   let isExist = null;
+  //   if (snapshot) {
+  //     snapshot.docs.map((doc) => {
+  //       if (doc.data().name === roomName) {
+  //         isExist = { name: doc.data().name, id: doc.id } as Room;
+  //       }
+  //     });
+  //   }
+  //   return isExist;
+  // };
 
   const fetchDiseases = async (query: string) => {
     if (!query) return;
@@ -68,6 +50,9 @@ const GeneticDiseaseSearch: React.FC = () => {
       );
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
       const link = response.data[1]?.[0]?.[0]?.[0];
+      if (link) {
+        setDiseaseDetails?.({ name: query, link });
+      }
       return link;
     } catch (error) {
       console.error("Error fetching diseases:", error);
