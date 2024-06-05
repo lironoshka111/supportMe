@@ -18,11 +18,11 @@ interface GroupFormModalProps {
 
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [groupName, setGroupName] = useState("");
-  const [maxParticipants, setMaxParticipants] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState(1);
   const [location, setLocation] = useState("");
   const [isOnline, setIsOnline] = useState(false);
   const [contactNumber, setContactNumber] = useState("");
-
+  const [description, setDescription] = useState("");
   const handleSave = () => {
     // Handle save logic here
     console.log({
@@ -68,16 +68,16 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           label="Max Number of Participants"
           type="number"
           value={maxParticipants}
-          onChange={(e) => setMaxParticipants(e.target.value)}
+          onChange={(e) => setMaxParticipants(+e.target.value)}
           margin="normal"
         />
         <TextField
+          multiline
           fullWidth
-          label="Location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          label="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           margin="normal"
-          disabled={isOnline}
         />
         <FormControlLabel
           control={
@@ -89,13 +89,23 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           label="Online"
         />
         {!isOnline && (
-          <TextField
-            fullWidth
-            label="Contact Number"
-            value={contactNumber}
-            onChange={(e) => setContactNumber(e.target.value)}
-            margin="normal"
-          />
+          <div className="flex flex-col">
+            <TextField
+              fullWidth
+              label="Location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              margin="normal"
+              disabled={isOnline}
+            />
+            <TextField
+              fullWidth
+              label="Contact Number"
+              value={contactNumber}
+              onChange={(e) => setContactNumber(e.target.value)}
+              margin="normal"
+            />
+          </div>
         )}
         <Box display="flex" justifyContent="space-between" mt={2}>
           <Button variant="outlined" onClick={handleCancel}>
