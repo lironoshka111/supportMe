@@ -171,6 +171,7 @@ const SidebarContainer = styled.div`
   background: var(--slack-color);
   height: 100%;
   overflow-y: auto; /* Add inner scrolling */
+  resize: horizontal;
 `;
 
 const SidebarTop = styled.div`
