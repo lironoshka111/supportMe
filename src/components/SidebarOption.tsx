@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "@emotion/styled";
-import { Link } from "react-router-dom";
-import { roomSelected } from "../redux/channelSlice";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useRedux } from "../redux/reduxStateContext";
 
 interface SidebarOptionProps {
@@ -47,7 +46,24 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   addChannel,
   selectChannel,
 }) => {
-  const { selectedRoom, roomSelected } = useRedux();
+  let location = useLocation();
+  const { pathname } = location;
+
+  // Extracting parameters from pathname
+  const params = pathname.split("/");
+
+  // Extracting parameter values from params array
+  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+
+  const { selectedRoom, setSelectedRoom } = useRedux();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!selectedRoom?.id) {
+      navigate("/");
+    }
+  }, [selectedRoom?.id]);
+
   return (
     <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
       <OptionContainer
@@ -57,13 +73,14 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
           if (isChannel) {
             selectChannel && selectChannel(id, title);
           } else {
-            roomSelected({
+            setSelectedRoom({
               id: "",
               title: "",
             });
+            navigate("/");
           }
         }}
-        selected={selectedRoom?.id === id}
+        selected={roomId === id}
       />
     </Link>
   );

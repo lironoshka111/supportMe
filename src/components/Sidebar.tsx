@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import CreateIcon from "@mui/icons-material/Create";
-import SidebarOption, { OptionContainer } from "./SidebarOption";
 import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
@@ -18,10 +16,13 @@ import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { useRedux } from "../redux/reduxStateContext";
 import GroupFormModal from "./GroupFormModal";
+import { useNavigate } from "react-router-dom";
+import SidebarOption, { OptionContainer } from "./SidebarOption";
 
 interface SidebarProps {
   user: User;
 }
+
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [snapshotFavorites, isLoadingFavorites, errorFavorites] = useCollection(
@@ -31,7 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
-  const { roomSelected } = useRedux();
+  const { setSelectedRoom } = useRedux();
+  const navigate = useNavigate();
 
   const handleClose = (
     event: React.SyntheticEvent | Event,
@@ -50,11 +52,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   }, [snapshot]);
 
   const selectChannel = (roomId: string, roomTitle: string) => {
-    roomSelected({
+    setSelectedRoom({
       id: roomId,
       title: roomTitle,
     });
+    navigate(`/room/${roomId}`);
   };
+
   return (
     <>
       <SidebarContainer>
@@ -62,9 +66,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <AlertWrapper>
             <Alert variant="filled" severity="error">
               <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
-                Error occured
+                Error occurred
               </AlertTitle>
-              <p>Something went wrong , please check if all is right!</p>
+              <p>Something went wrong, please check if all is right!</p>
             </Alert>
           </AlertWrapper>
         )}
@@ -75,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                 Loading...
               </AlertTitle>
               <p>
-                Just wait a second , we need to load something for your comfort
+                Just wait a second, we need to load something for your comfort
               </p>
             </Alert>
           </AlertWrapper>
@@ -89,9 +93,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               {user.displayName}
             </p>
           </SidebarInfo>
-          {/*<CreateIcon*/}
-          {/*  sx={{ background: "white", padding: "5px", borderRadius: "17px" }}*/}
-          {/*/>*/}
         </SidebarTop>
 
         <SidebarOptionList>
@@ -169,7 +170,9 @@ const SidebarContainer = styled.div`
   flex-direction: column;
   background: var(--slack-color);
   height: 100%;
+  overflow-y: auto; /* Add inner scrolling */
 `;
+
 const SidebarTop = styled.div`
   display: flex;
   padding: 10px;

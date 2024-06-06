@@ -28,7 +28,7 @@ interface ReduxProviderProps {
 export const ReduxProvider: React.FC<ReduxProviderProps> = ({ children }) => {
   const [state, setState] = useState<StateType>(initialState);
 
-  const roomSelected = (room: SelectedRoomType) => {
+  const setSelectedRoom = (room: SelectedRoomType) => {
     setState((prevState) => ({ ...prevState, selectedRoom: room }));
   };
 
@@ -53,7 +53,7 @@ export const ReduxProvider: React.FC<ReduxProviderProps> = ({ children }) => {
     <ReduxContext.Provider
       value={{
         ...state,
-        roomSelected,
+        setSelectedRoom,
         setFavorite,
         login,
         logout,

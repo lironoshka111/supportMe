@@ -19,11 +19,13 @@ export interface diseaseDetails {
 }
 
 export interface GeneticDiseaseSearchProps {
-  setDiseaseDetails?: (diseaseDetails: diseaseDetails) => void;
+  setDiseaseDetails?: (diseaseDetails?: diseaseDetails) => void;
+  url?: string;
 }
 
 const GeneticDiseaseSearch = ({
   setDiseaseDetails,
+  url,
 }: GeneticDiseaseSearchProps) => {
   // const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
@@ -45,12 +47,13 @@ const GeneticDiseaseSearch = ({
   const fetchDiseases = async (query: string) => {
     if (!query) return;
     try {
+      setDiseaseDetails?.(undefined);
       const response = await axios.get(
         `https://clinicaltables.nlm.nih.gov/api/conditions/v3/search?authenticity_token=&terms=${query}&cf=info_link_data`,
       );
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
       const link = response.data[1]?.[0]?.[0]?.[0];
-      if (link) {
+      if (link && response.data[3].length === 1) {
         setDiseaseDetails?.({ name: query, link });
       }
       return link;

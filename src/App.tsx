@@ -33,8 +33,8 @@ function App() {
                   </HomePage>
                 }
               />
-              <Route path="/room/:roomId" element={<Chat />} />
               <Route path="/room/:roomId/members" element={<MembersPage />} />
+              <Route path="/room/:roomId" element={<Chat />} />
               <Route path="/about" element={<AboutPage />} />
             </Routes>
           </AppBody>

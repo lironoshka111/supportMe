@@ -27,9 +27,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
     setShowEmojiPicker(false);
   }, ref);
 
-  const addMessage = async (e: FormEvent<HTMLFormElement>) => {
+  const addMessage = async (e?: FormEvent<HTMLFormElement>) => {
     if (messageValue) {
-      e.preventDefault();
+      e?.preventDefault();
       const docRef = doc(collection(db, "rooms"), roomId);
       await addDoc(collection(docRef, "messages"), {
         message: messageValue,
@@ -43,6 +43,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
 
   const onEmojiClick = (event: any) => {
     setMessageValue((prevInput) => prevInput + event.emoji);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      addMessage();
+    }
   };
 
   return (
@@ -73,6 +79,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
           inputProps={{ "aria-label": "message input" }}
           autoFocus
           multiline
+          onKeyDown={handleKeyDown} // Handle Enter key press
         />
         <Divider className="h-7 mx-0.5" orientation="vertical" />
         <Tooltip title={"Send"} arrow>

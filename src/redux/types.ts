@@ -17,7 +17,7 @@ export interface StateType {
 }
 
 export interface ReduxContextType extends StateType {
-  roomSelected: (room: SelectedRoomType) => void;
+  setSelectedRoom: (room: SelectedRoomType) => void;
   setFavorite: (favorite: boolean) => void;
   login: (user: UserType) => void;
   logout: () => void;

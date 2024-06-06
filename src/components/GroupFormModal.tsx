@@ -1,6 +1,4 @@
-// GroupFormModal.tsx
-
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Modal,
   Box,
@@ -12,14 +10,22 @@ import {
 } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import { roomSelected } from "../redux/channelSlice";
 import { useNavigate } from "react-router-dom";
 import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRedux } from "../redux/reduxStateContext";
 
 interface GroupFormModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+}
+
+interface ValidationErrors {
+  diseaseDetails?: string;
+  description?: string;
+  maxParticipants?: string;
+  location?: string;
+  contactNumber?: string;
 }
 
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
@@ -31,9 +37,17 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [description, setDescription] = useState("");
   const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
   const navigate = useNavigate();
-  const handleSave = () => {
-    // Handle save logic here
-    addChannel();
+  const { setSelectedRoom } = useRedux();
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const handleSave = async () => {
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    await addChannel();
     setOpen(false);
   };
 
@@ -48,6 +62,35 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
     setContactNumber("");
     setDescription("");
     setDiseaseDetails(undefined);
+    setErrors({});
+  };
+
+  const validateForm = (): ValidationErrors => {
+    const errors: ValidationErrors = {};
+
+    if (!diseaseDetails?.name || !diseaseDetails?.link) {
+      errors.diseaseDetails =
+        "Disease details must contain a valid name and link.";
+    }
+
+    if (description.split(" ").length < 2) {
+      errors.description = "Description must be at least 10 words.";
+    }
+
+    if (!maxParticipants || maxParticipants <= 0) {
+      errors.maxParticipants =
+        "Max number of participants must be a positive number.";
+    }
+
+    if (!isOnline && !location) {
+      errors.location = "Location is required for offline events.";
+    }
+
+    if (!contactNumber) {
+      errors.contactNumber = "Contact number is required.";
+    }
+
+    return errors;
   };
 
   const addChannel = async () => {
@@ -58,14 +101,17 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
       location,
       isOnline,
       contactNumber,
+      description,
       adminId: user?.uid,
     });
-    roomSelected({
+
+    setSelectedRoom({
       id: res.id as string,
       title: diseaseDetails?.name as string,
+      linkToData: diseaseDetails?.link,
+      favorite: false,
     });
     navigate(`/room/${res.id}`); // Navigate to the newly created rooms
-    debugger;
     resetForm();
   };
 
@@ -86,7 +132,9 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
         <Typography variant="h6" component="h2">
           Group Details
         </Typography>
+
         <GeneticDiseaseSearch setDiseaseDetails={setDiseaseDetails} />
+
         <TextField
           fullWidth
           label="Max Number of Participants"
@@ -94,15 +142,21 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           value={maxParticipants}
           onChange={(e) => setMaxParticipants(+e.target.value)}
           margin="normal"
+          error={!!errors.maxParticipants}
+          helperText={errors.maxParticipants}
         />
+
         <TextField
           multiline
           fullWidth
-          label="description"
+          label="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           margin="normal"
+          error={!!errors.description}
+          helperText={errors.description}
         />
+
         <FormControlLabel
           control={
             <Switch
@@ -112,6 +166,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           }
           label="Online"
         />
+
         {!isOnline && (
           <div className="flex flex-col">
             <TextField
@@ -121,6 +176,8 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
               onChange={(e) => setLocation(e.target.value)}
               margin="normal"
               disabled={isOnline}
+              error={!!errors.location}
+              helperText={errors.location}
             />
             <TextField
               fullWidth
@@ -128,9 +185,20 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
               value={contactNumber}
               onChange={(e) => setContactNumber(e.target.value)}
               margin="normal"
+              error={!!errors.contactNumber}
+              helperText={errors.contactNumber}
             />
           </div>
         )}
+
+        <Box mt={2}>
+          {errors.diseaseDetails && (
+            <Typography color="error" variant="body2">
+              {errors.diseaseDetails}
+            </Typography>
+          )}
+        </Box>
+
         <Box display="flex" justifyContent="space-between" mt={2}>
           <Button variant="outlined" onClick={handleCancel}>
             Cancel

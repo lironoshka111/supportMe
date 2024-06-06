@@ -7,7 +7,7 @@ const channelSlice = createSlice({
     selectedRoom: null as null | SelectedRoomType,
   },
   reducers: {
-    roomSelected: (state, action: PayloadAction<SelectedRoomType>) => {
+    setSelectedRoom: (state, action: PayloadAction<SelectedRoomType>) => {
       state.selectedRoom = action.payload;
     },
     setFavorite: (state, action: PayloadAction<boolean>) => {
@@ -19,4 +19,4 @@ const channelSlice = createSlice({
 });
 
 export default channelSlice.reducer;
-export const { roomSelected, setFavorite } = channelSlice.actions;
+export const { setSelectedRoom, setFavorite } = channelSlice.actions;
