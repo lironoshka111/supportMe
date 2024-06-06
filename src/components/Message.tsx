@@ -41,10 +41,10 @@ const Message: React.FC<MessageProps> = ({
           <MyMessageContainer>
             <MyMessageInfo>
               <MyMessageInfoTop>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
                 <h4>{userName}</h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
               </MyMessageInfoTop>
-              <p>{message}</p>
+              <MessageText>{message}</MessageText>{" "}
             </MyMessageInfo>
             <Avatar
               variant="rounded"
@@ -64,7 +64,7 @@ const Message: React.FC<MessageProps> = ({
                 <h4>{userName}</h4>
                 <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
               </MessageInfoTop>
-              <p>{message}</p>
+              <MessageText>{message}</MessageText>{" "}
             </MessageInfo>
           </MessageContainer>
         )}
@@ -98,6 +98,7 @@ const Message: React.FC<MessageProps> = ({
 
 export default Message;
 
+// Styled components
 const MessageContainer = styled.div`
   width: 100%;
   display: flex;
@@ -120,6 +121,7 @@ const MyMessageInfo = styled.div`
   flex-direction: column;
   margin-right: 10px;
   text-align: end;
+  width: 100%;
 `;
 const MessageInfoTop = styled.div`
   display: flex;
@@ -135,7 +137,8 @@ const MessageInfoTop = styled.div`
 `;
 const MyMessageInfoTop = styled.div`
   display: flex;
-  align-items: center;
+  align-items: start;
+  gap: 5px;
   p {
     margin-right: 5px;
     font-size: 12px;
@@ -144,4 +147,10 @@ const MyMessageInfoTop = styled.div`
   h4 {
     font-weight: 500;
   }
+`;
+
+const MessageText = styled.p`
+  word-wrap: break-word; /* Ensure line breaks are respected */
+  white-space: pre-wrap; /* Preserve line breaks */
+  text-align: left;
 `;
