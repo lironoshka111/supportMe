@@ -39,18 +39,18 @@ const Message: React.FC<MessageProps> = ({
       <div className="bg-pink-50 rounded-md p-3">
         {user?.displayName === userName ? (
           <MyMessageContainer>
-            <MyMessageInfo>
-              <MyMessageInfoTop>
-                <h4>{userName}</h4>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-              </MyMessageInfoTop>
-              <MessageText>{message}</MessageText>{" "}
-            </MyMessageInfo>
             <Avatar
               variant="rounded"
               src={userImage}
               sx={{ width: 50, height: 50 }}
             />
+            <MyMessageInfo>
+              <MyMessageInfoTop>
+                <h4 className="">YOU</h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+              </MyMessageInfoTop>
+              <MessageText>{message}</MessageText>{" "}
+            </MyMessageInfo>
           </MyMessageContainer>
         ) : (
           <MessageContainer>
@@ -104,6 +104,7 @@ const MessageContainer = styled.div`
   display: flex;
   align-items: center;
   margin: 5px 0px;
+  justify-content: flex-end;
 `;
 const MyMessageContainer = styled.div`
   width: 100%;
@@ -115,6 +116,7 @@ const MessageInfo = styled.div`
   display: flex;
   flex-direction: column;
   margin-left: 10px;
+  width: 100%;
 `;
 const MyMessageInfo = styled.div`
   display: flex;
@@ -125,7 +127,8 @@ const MyMessageInfo = styled.div`
 `;
 const MessageInfoTop = styled.div`
   display: flex;
-  align-items: center;
+  align-items: start;
+  gap: 5px;
   p {
     margin-left: 5px;
     font-size: 12px;
@@ -137,7 +140,7 @@ const MessageInfoTop = styled.div`
 `;
 const MyMessageInfoTop = styled.div`
   display: flex;
-  align-items: start;
+  align-items: end;
   gap: 5px;
   p {
     margin-right: 5px;
