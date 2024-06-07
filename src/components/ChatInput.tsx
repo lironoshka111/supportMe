@@ -36,6 +36,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
         userName: user?.displayName,
         userImage: user?.photoURL,
         timestamp: Timestamp.now(),
+        userId: user?.uid,
       });
       setMessageValue("");
     }
