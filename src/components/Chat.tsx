@@ -50,10 +50,6 @@ const Chat: React.FC<ChatProps> = () => {
         containerRef.current?.scrollTop === 0
       ) {
         divRef.current?.scrollIntoView({ behavior: "smooth" });
-        console.log(
-          containerRef.current?.scrollHeight - containerRef.current?.scrollTop,
-          containerRef.current?.clientHeight,
-        );
       }
   }, [messages]);
 

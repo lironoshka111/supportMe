@@ -10,7 +10,6 @@ import { useNavigate } from "react-router-dom";
 const MembersPage = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  console.log(user);
 
   const [users, setUsers] = useState([user]);
   const [admin, setAdmin] = useState(user);

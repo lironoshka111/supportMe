@@ -44,6 +44,13 @@ const GeneticDiseaseSearch = ({
   //   return isExist;
   // };
 
+  const shouldSaveTheResult = (data: string[][], text: string) =>
+    data.some((item) => {
+      if (item[0] === text) {
+        return true;
+      }
+    });
+
   const fetchDiseases = async (query: string) => {
     if (!query) return;
     try {
@@ -53,7 +60,7 @@ const GeneticDiseaseSearch = ({
       );
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
       const link = response.data[1]?.[0]?.[0]?.[0];
-      if (link && response.data[3].length === 1) {
+      if (link && shouldSaveTheResult(response.data[3], query)) {
         setDiseaseDetails?.({ name: query, link });
       }
       return link;

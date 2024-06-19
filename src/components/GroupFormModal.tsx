@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Box,
@@ -40,6 +40,14 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const { setSelectedRoom } = useRedux();
   const [errors, setErrors] = useState<ValidationErrors>({});
 
+  useEffect(() => {
+    if (diseaseDetails?.name && open) {
+      setDescription(
+        `This group is for people who have ${diseaseDetails?.name}. The group is for sharing information and support. Please join if you have ${diseaseDetails?.name}.`,
+      );
+    }
+  }, [diseaseDetails?.name]);
+
   const handleSave = async () => {
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
@@ -68,9 +76,8 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const validateForm = (): ValidationErrors => {
     const errors: ValidationErrors = {};
 
-    if (!diseaseDetails?.name || !diseaseDetails?.link) {
-      errors.diseaseDetails =
-        "Disease details must contain a valid name and link.";
+    if (!diseaseDetails?.name) {
+      errors.diseaseDetails = "Disease details must contain a valid name";
     }
 
     if (description.split(" ").length < 2) {
@@ -86,9 +93,9 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
       errors.location = "Location is required for offline events.";
     }
 
-    if (!contactNumber) {
-      errors.contactNumber = "Contact number is required.";
-    }
+    // if (!contactNumber) {
+    //   errors.contactNumber = "Contact number is required.";
+    // }
 
     return errors;
   };
