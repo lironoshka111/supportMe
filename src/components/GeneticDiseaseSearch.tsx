@@ -59,8 +59,11 @@ const GeneticDiseaseSearch = ({
         `https://clinicaltables.nlm.nih.gov/api/conditions/v3/search?authenticity_token=&terms=${query}&cf=info_link_data`,
       );
       setOptions(response.data[3] ?? []); // Adjust based on the actual API response structure
-      const link = response.data[1]?.[0]?.[0]?.[0];
-      if (link && shouldSaveTheResult(response.data[3], query)) {
+      let link = response.data[1]?.[0]?.[0]?.[0];
+      if (shouldSaveTheResult(response.data[3], query)) {
+        if (query.toLowerCase().includes("ptsd")) {
+          link = "https://medlineplus.gov/posttraumaticstressdisorder.html";
+        }
         setDiseaseDetails?.({ name: query, link });
       }
       return link;

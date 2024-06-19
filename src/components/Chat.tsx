@@ -129,6 +129,8 @@ const Chat: React.FC<ChatProps> = () => {
         </div>
       </div>
       <div
+        aria-label="message container"
+        tabIndex={0}
         className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
         ref={containerRef}
       >

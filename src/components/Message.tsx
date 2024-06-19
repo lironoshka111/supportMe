@@ -44,12 +44,16 @@ const Message: React.FC<MessageProps> = ({
               src={userImage}
               sx={{ width: 50, height: 50 }}
             />
-            <MyMessageInfo>
+            <MyMessageInfo tabIndex={0}>
               <MyMessageInfoTop>
-                <h4 className="">YOU</h4>
+                <h4 aria-label="you" className="">
+                  YOU
+                </h4>
                 <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
               </MyMessageInfoTop>
-              <MessageText>{message}</MessageText>{" "}
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>
             </MyMessageInfo>
           </MyMessageContainer>
         ) : (
@@ -59,12 +63,14 @@ const Message: React.FC<MessageProps> = ({
               src={userImage}
               sx={{ width: 50, height: 50 }}
             />
-            <MessageInfo>
+            <MessageInfo tabIndex={0}>
               <MessageInfoTop>
-                <h4>{userName}</h4>
+                <h4 aria-label={`user name ${userName}`}>{userName}</h4>
                 <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
               </MessageInfoTop>
-              <MessageText>{message}</MessageText>{" "}
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>{" "}
             </MessageInfo>
           </MessageContainer>
         )}
