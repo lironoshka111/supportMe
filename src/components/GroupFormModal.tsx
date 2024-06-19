@@ -7,6 +7,7 @@ import {
   Button,
   Switch,
   FormControlLabel,
+  Link,
 } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "../firebase";
@@ -196,6 +197,18 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
               helperText={errors.contactNumber}
             />
           </div>
+        )}
+
+        {diseaseDetails?.link && (
+          <Typography mt={2}>
+            <Link
+              href={diseaseDetails.link}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              More information about {diseaseDetails.name}
+            </Link>
+          </Typography>
         )}
 
         <Box mt={2}>
