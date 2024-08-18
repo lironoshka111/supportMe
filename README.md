@@ -8,6 +8,7 @@ In the project directory, you can run:
 
 ### `yarn start`
 
+copy the form .env.dev and put in .env file
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 

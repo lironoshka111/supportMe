@@ -33,7 +33,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [user] = useAuthState(auth);
   const [maxParticipants, setMaxParticipants] = useState(1);
   const [location, setLocation] = useState("");
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
   const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
@@ -67,12 +67,18 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const resetForm = () => {
     setMaxParticipants(1);
     setLocation("");
-    setIsOnline(false);
+    setIsOnline(true);
     setContactNumber("");
     setDescription("");
     setDiseaseDetails(undefined);
     setErrors({});
   };
+
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open]);
 
   const validateForm = (): ValidationErrors => {
     const errors: ValidationErrors = {};

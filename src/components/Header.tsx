@@ -1,16 +1,13 @@
 import React, { useState, MouseEvent } from "react";
 import { Avatar, Tooltip, Menu, MenuItem, IconButton } from "@mui/material";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import GeneticDiseaseSearch from "./GeneticDiseaseSearch";
 import { useNavigate } from "react-router-dom";
-import GapSlider from "./GapSlider";
 import UserSettings from "./UserSettings";
-import logo from "../images/logo.jpg";
 
 interface HeaderProps {
   user: User;
@@ -75,7 +72,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
               justifyContent: "center",
             }}
           >
-            <Avatar src={logo} sx={{ width: 80, height: 60 }} />
+            <Avatar src="/images/logo.jpg" sx={{ width: 80, height: 60 }} />
           </IconButton>
         </Tooltip>
       </div>
