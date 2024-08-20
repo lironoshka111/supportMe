@@ -60,7 +60,6 @@ const LoginContainer = styled.div`
   height: 100vh;
   background-image: url("/images/background.png");
   background-size: cover;
-  backkground-repeat: no-repeat;
 
   button {
     background-color: rgba(152, 81, 81, 0.82);
