@@ -15,19 +15,27 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
   return (
     <LoginContainer>
       {loading ? (
-        <LoginLoadContainer>
+        <>
           <img src="/images/logo.jpg" alt="logo" />
           <Loader />
-        </LoginLoadContainer>
+        </>
       ) : (
-        <LoginInnerContainer>
-          <img src="/images/logo.jpg" alt="logo" />
+        <div className="flex flex-col gap-10 justify-center items-center">
+          <img
+            src="/images/logo.jpg"
+            alt="logo"
+            className="w-[280px] rounded-xl"
+          />
           <Button
             onClick={login}
             variant="contained"
             sx={{
-              borderRadius: "40%",
-              backgroundColor: "pink",
+              display: "flex",
+              justifyContent: "center",
+              width: "250px",
+              height: "40px",
+              borderRadius: "10%",
+              // background: "grey",
               ":hover": {
                 background: "grey",
               },
@@ -35,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
           >
             Login with google
           </Button>
-        </LoginInnerContainer>
+        </div>
       )}
     </LoginContainer>
   );
@@ -47,37 +55,12 @@ const LoginContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e3d0d3;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
+  background-color: #ceb6b6;
   height: 100vh;
-`;
-const LoginInnerContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 30%;
-  //border-radius: 50%;
-  height: 50%;
-  background-color: lightpink;
-  img {
-    border-radius: 50%;
-    object-fit: contain;
-    width: 40%;
-    margin-bottom: 30px;
-  }
-`;
-const LoginLoadContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 30%;
-  height: 50%;
-  background-color: inherit;
-  img {
-    object-fit: contain;
-    width: 40%;
-    margin-bottom: 30px;
+  background-image: url("/images/background.png");
+
+  button {
+    background-color: rgba(152, 81, 81, 0.82);
   }
 `;
