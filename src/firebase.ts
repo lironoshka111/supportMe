@@ -10,7 +10,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 //   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
 //   appId: process.env.REACT_APP_FIREBASE_APP_ID,
 // };
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyC9OX0WWG-aF4HuQ8dwKuXFNECii-clsxc",
   authDomain: "support-me-1.firebaseapp.com",
   projectId: "support-me-1",

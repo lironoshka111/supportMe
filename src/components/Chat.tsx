@@ -9,6 +9,7 @@ import {
   doc,
   orderBy,
   getDoc,
+  deleteDoc, // Import deleteDoc for deleting messages
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -22,6 +23,7 @@ import { useRedux } from "../redux/reduxStateContext";
 import { useNavigate } from "react-router-dom";
 
 interface ChatProps {}
+
 const Chat: React.FC<ChatProps> = () => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -36,18 +38,21 @@ const Chat: React.FC<ChatProps> = () => {
       docRef = doc(collection(db, "rooms"), selectedRoom.id);
     }
   }, [selectedRoom]);
+
   if (selectedRoom) {
     docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }
+
   const [messages] = useCollection(
-    docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
+      docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
   );
+
   useEffect(() => {
     if (containerRef.current)
       if (
-        containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
+          containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
           containerRef.current?.clientHeight + 200 ||
-        containerRef.current?.scrollTop === 0
+          containerRef.current?.scrollTop === 0
       ) {
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
@@ -71,20 +76,17 @@ const Chat: React.FC<ChatProps> = () => {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      // Add a new document if it doesn't exist
       await addDoc(favoritesRef, {
         roomId: selectedRoom?.id,
         active: active,
         title: selectedRoom?.title,
       });
     } else {
-      // Get the first document from the query snapshot
       const document = querySnapshot.docs[0];
       const docRef = doc(db, "favorites", document.id);
       const docSnapshot = await getDoc(docRef);
 
       if (docSnapshot.exists()) {
-        // Update the existing document
         await updateDoc(docRef, {
           active: active,
         });
@@ -92,57 +94,76 @@ const Chat: React.FC<ChatProps> = () => {
     }
   };
 
-  return (
-    <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
-      <div className="flex items-center justify-between  border-b border-gray-300">
-        <div className="flex items-center">
-          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
-          <IconButton
-            color={selectedRoom?.favorite ? "warning" : undefined}
-            onClick={() => toggleFavorite()}
-          >
-            <StarBorderIcon />
-          </IconButton>
-        </div>
-        <div className="flex  gap-2 items-center justify-end">
-          <Tooltip title="group members" arrow>
-            <IconButton
-              onClick={() => {
-                navigate(`/room/${selectedRoom?.id}/members`);
-              }}
-            >
-              <PeopleIcon />
-            </IconButton>
-          </Tooltip>
+  const handleDeleteMessage = async (id: string) => {
+    try {
+      if (selectedRoom) {
+        const messageRef = doc(
+            collection(db, "rooms", selectedRoom.id, "messages"),
+            id
+        );
+        await deleteDoc(messageRef); // Delete the message from Firestore
+      }
+    } catch (error) {
+      console.error("Error deleting message: ", error);
+    }
+  };
 
-          <Tooltip title="Details" arrow>
+  return (
+      <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
+        <div className="flex items-center justify-between  border-b border-gray-300">
+          <div className="flex items-center">
+            <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
             <IconButton
-              onClick={() => {
-                if (link) {
-                  window.open(link);
-                }
-              }}
+                color={selectedRoom?.favorite ? "warning" : undefined}
+                onClick={() => toggleFavorite()}
             >
-              <HelpOutlineIcon />
+              <StarBorderIcon />
             </IconButton>
-          </Tooltip>
+          </div>
+          <div className="flex  gap-2 items-center justify-end">
+            <Tooltip title="group members" arrow>
+              <IconButton
+                  onClick={() => {
+                    navigate(`/room/${selectedRoom?.id}/members`);
+                  }}
+              >
+                <PeopleIcon />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Details" arrow>
+              <IconButton
+                  onClick={() => {
+                    if (link) {
+                      window.open(link);
+                    }
+                  }}
+              >
+                <HelpOutlineIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
+        <div
+            aria-label="message container"
+            tabIndex={0}
+            className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
+            ref={containerRef}
+        >
+          {messages?.docs.map((doc) => (
+              <Message
+                  key={doc.id}
+                  id={doc.id} // Pass the message ID
+                  {...(doc.data() as Omit<MessageProps, 'id'>)}
+                  onDelete={handleDeleteMessage} // Pass the delete handler
+              />
+          ))}
+          <div ref={divRef}></div>
+        </div>
+        {selectedRoom?.id && (
+            <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />
+        )}
       </div>
-      <div
-        aria-label="message container"
-        tabIndex={0}
-        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
-        ref={containerRef}
-      >
-        {messages?.docs.map((doc) => (
-          <Message key={doc.id} {...(doc.data() as MessageProps)} />
-        ))}
-        <div ref={divRef}></div>
-      </div>
-      {selectedRoom?.id && (
-        <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />
-      )}
-    </div>
   );
 };
 

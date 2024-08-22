@@ -1,19 +1,22 @@
+import React, { useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Avatar } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
-import React, { useRef, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { useHover } from "ahooks";
 import { ReactionBarSelector } from "@charkour/react-reactions";
 import { jsx } from "@emotion/react";
+import {analyzeMessage} from "./BotReporter";
 import JSX = jsx.JSX;
 
 export interface MessageProps {
+  id: string;
   message: string;
   userName: string;
   userImage: string;
   timestamp: Timestamp;
+  onDelete: (id: string) => void; // Callback to remove the message from the parent component
 }
 
 const emojis = [
@@ -24,81 +27,92 @@ const emojis = [
   { node: <div>😢</div>, label: "sad", key: "sad" },
   { node: <div>😡</div>, label: "angry", key: "angry" },
 ];
+
 const Message: React.FC<MessageProps> = ({
-  message,
-  userImage,
-  userName,
-  timestamp,
-}) => {
+                                           id,
+                                           message,
+                                           userImage,
+                                           userName,
+                                           timestamp,
+                                           onDelete,
+                                         }) => {
   const [user] = useAuthState(auth);
   const ref = useRef(null);
   const isHovering = useHover(ref);
   const [emoji, setEmoji] = useState<JSX.Element>();
-  return (
-    <div className="flex flex-col F rounded-md p-3" ref={ref}>
-      <div className="bg-pink-50 rounded-md p-3">
-        {user?.displayName === userName ? (
-          <MyMessageContainer>
-            <Avatar
-              variant="rounded"
-              src={userImage}
-              sx={{ width: 50, height: 50 }}
-            />
-            <MyMessageInfo tabIndex={0}>
-              <MyMessageInfoTop>
-                <h4 aria-label="you" className="">
-                  YOU
-                </h4>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-              </MyMessageInfoTop>
-              <MessageText aria-label={`message ${message}`}>
-                {message}
-              </MessageText>
-            </MyMessageInfo>
-          </MyMessageContainer>
-        ) : (
-          <MessageContainer>
-            <Avatar
-              variant="rounded"
-              src={userImage}
-              sx={{ width: 50, height: 50 }}
-            />
-            <MessageInfo tabIndex={0}>
-              <MessageInfoTop>
-                <h4 aria-label={`user name ${userName}`}>{userName}</h4>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-              </MessageInfoTop>
-              <MessageText aria-label={`message ${message}`}>
-                {message}
-              </MessageText>{" "}
-            </MessageInfo>
-          </MessageContainer>
-        )}
-      </div>
-      {isHovering ? (
-        <ReactionBarSelector
-          reactions={emojis}
-          iconSize={10}
-          onSelect={(label) => {
-            const foundEmoji = emojis.find(
-              (emoji) => emoji.key === label,
-            )?.node;
-            if (!foundEmoji) {
-              return;
-            }
-            if (foundEmoji?.toString() === emoji?.toString()) {
-              setEmoji(undefined);
-              return;
-            }
 
-            setEmoji(foundEmoji);
-          }}
-        />
-      ) : (
-        <div className="h-[20px]" />
-      )}
-      {emoji ?? <div className="h-[10px]" />}
-    </div>
+  const handleDelete = async () => {
+    const isInappropriate = await analyzeMessage(message);
+    if (isInappropriate) {
+      onDelete(id); // Trigger the deletion callback
+    }
+  };
+
+  return (
+      <div className="flex flex-col F rounded-md p-3" ref={ref} onClick={handleDelete}>
+        <div className="bg-pink-50 rounded-md p-3">
+          {user?.displayName === userName ? (
+              <MyMessageContainer>
+                <Avatar
+                    variant="rounded"
+                    src={userImage}
+                    sx={{ width: 50, height: 50 }}
+                />
+                <MyMessageInfo tabIndex={0}>
+                  <MyMessageInfoTop>
+                    <h4 aria-label="you" className="">
+                      YOU
+                    </h4>
+                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+                  </MyMessageInfoTop>
+                  <MessageText aria-label={`message ${message}`}>
+                    {message}
+                  </MessageText>
+                </MyMessageInfo>
+              </MyMessageContainer>
+          ) : (
+              <MessageContainer>
+                <Avatar
+                    variant="rounded"
+                    src={userImage}
+                    sx={{ width: 50, height: 50 }}
+                />
+                <MessageInfo tabIndex={0}>
+                  <MessageInfoTop>
+                    <h4 aria-label={`user name ${userName}`}>{userName}</h4>
+                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+                  </MessageInfoTop>
+                  <MessageText aria-label={`message ${message}`}>
+                    {message}
+                  </MessageText>
+                </MessageInfo>
+              </MessageContainer>
+          )}
+        </div>
+        {isHovering ? (
+            <ReactionBarSelector
+                reactions={emojis}
+                iconSize={10}
+                onSelect={(label) => {
+                  const foundEmoji = emojis.find(
+                      (emoji) => emoji.key === label,
+                  )?.node;
+                  if (!foundEmoji) {
+                    return;
+                  }
+                  if (foundEmoji?.toString() === emoji?.toString()) {
+                    setEmoji(undefined);
+                    return;
+                  }
+
+                  setEmoji(foundEmoji);
+                }}
+            />
+        ) : (
+            <div className="h-[20px]" />
+        )}
+        {emoji ?? <div className="h-[10px]" />}
+      </div>
   );
 };
 
