@@ -8,6 +8,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { updateProfile } from "firebase/auth";
 import { User } from "firebase/auth";
 
@@ -72,13 +73,26 @@ const UserSettings: React.FC<UserSettingsProps> = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: 300, // Reduced width
+          height: "auto", // Adjust height
+          maxHeight: "80vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
           borderRadius: 2,
+          overflowY: "auto", // Enable scrolling if content overflows
         }}
       >
+        <IconButton
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <Typography variant="h6" id="user-settings-modal" sx={{ mb: 2 }}>
           User Settings
         </Typography>
