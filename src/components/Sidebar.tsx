@@ -5,7 +5,14 @@ import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { collection, query, where } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
@@ -18,14 +25,13 @@ import { useRedux } from "../redux/reduxStateContext";
 import GroupFormModal from "./GroupFormModal";
 import { useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
-import { GroupMember } from "../models";
+import { GroupMember, Room } from "../models";
 
 interface SidebarProps {
   user: User;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
-  // Query to get only the rooms where the user is a member
   const userRoomsQuery = query(
     collection(db, "groupMembers"),
     where("userId", "==", user.uid),
@@ -38,6 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
+  const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
   const { setSelectedRoom } = useRedux();
   const navigate = useNavigate();
 
@@ -54,13 +61,32 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   useEffect(() => {
     if (loadingUserRooms || !userRoomsSnapshot?.size) return;
-    setOpen(true);
-  }, [userRoomsSnapshot]);
 
-  const selectChannel = (roomId: string, roomTitle: string) => {
+    // Fetch room details based on userRoomsSnapshot
+    const fetchRoomDetails = async () => {
+      const roomsMap = new Map<string, Room>();
+
+      for (const memberDoc of userRoomsSnapshot.docs) {
+        const memberData = memberDoc.data() as GroupMember;
+        const roomRef = doc(db, "rooms", memberData.roomId);
+        const roomDoc = await getDoc(roomRef);
+
+        if (roomDoc) {
+          roomsMap.set(memberData.roomId, roomDoc.data() as Room);
+        }
+      }
+
+      setRoomsData(roomsMap);
+    };
+
+    fetchRoomDetails();
+    setOpen(true);
+  }, [userRoomsSnapshot, loadingUserRooms]);
+
+  const selectChannel = (roomId: string) => {
     setSelectedRoom({
       id: roomId,
-      title: roomTitle,
+      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
     });
     navigate(`/room/${roomId}`);
   };
@@ -118,14 +144,15 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           {isRoomsOpen &&
             userRoomsSnapshot?.docs.map((memberDoc) => {
               const memberData = memberDoc.data() as GroupMember;
+              const roomData = roomsData.get(memberData.roomId);
               return (
                 <SidebarOption
-                  key={memberData.roomId}
-                  id={memberData.roomId}
+                  key={roomData?.roomId}
+                  id={roomData?.roomId}
                   Icon={TagIcon}
-                  title={memberData.nickname || "Unnamed Room"}
+                  title={roomData?.roomTitle || "Unnamed Room"}
                   isChannel={true}
-                  selectChannel={selectChannel}
+                  selectChannel={() => selectChannel(memberData.roomId)}
                 />
               );
             })}
@@ -143,15 +170,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               .filter((doc) => (doc.data() as GroupMember).isFavorite)
               .map((favDoc) => {
                 const favData = favDoc.data() as GroupMember;
+                const roomData = roomsData.get(favData.roomId);
 
                 return (
                   <SidebarOption
-                    key={favData.roomId}
-                    id={favData.roomId}
+                    key={roomData?.roomId}
+                    id={roomData?.roomId}
                     Icon={TagIcon}
-                    title={favData.nickname || "Unnamed Favorite"}
+                    title={roomData?.roomTitle || "Unnamed Favorite"}
                     isChannel={true}
-                    selectChannel={selectChannel}
+                    selectChannel={() => selectChannel(favData.roomId)}
                   />
                 );
               })}
