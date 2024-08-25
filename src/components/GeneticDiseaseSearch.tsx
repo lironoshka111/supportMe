@@ -2,16 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import { useCollection } from "react-firebase-hooks/firestore";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { useRedux } from "../redux/reduxStateContext";
-
-interface Room {
-  name: string;
-  id: string;
-}
 
 export interface diseaseDetails {
   name: string;
@@ -31,18 +21,6 @@ const GeneticDiseaseSearch = ({
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [value, setValue] = useState<string | null>(null); // Initialize value state
-
-  // const isRoomExist = (roomName: string) => {
-  //   let isExist = null;
-  //   if (snapshot) {
-  //     snapshot.docs.map((doc) => {
-  //       if (doc.data().name === roomName) {
-  //         isExist = { name: doc.data().name, id: doc.id } as Room;
-  //       }
-  //     });
-  //   }
-  //   return isExist;
-  // };
 
   const shouldSaveTheResult = (data: string[][], text: string) =>
     data.some((item) => {

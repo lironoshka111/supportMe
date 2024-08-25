@@ -16,13 +16,15 @@ import PeopleIcon from "@mui/icons-material/People";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
 import Message, { MessageProps } from "./Message";
 import { useRedux } from "../redux/reduxStateContext";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
+  const [user] = useAuthState(auth);
   const divRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { selectedRoom, setFavorite } = useRedux();
@@ -36,12 +38,15 @@ const Chat: React.FC<ChatProps> = () => {
       docRef = doc(collection(db, "rooms"), selectedRoom.id);
     }
   }, [selectedRoom]);
+
   if (selectedRoom) {
     docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }
+
   const [messages] = useCollection(
     docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
   );
+
   useEffect(() => {
     if (containerRef.current)
       if (
@@ -65,36 +70,41 @@ const Chat: React.FC<ChatProps> = () => {
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);
-    const favoritesRef = collection(db, "favorites");
-    const q = query(favoritesRef, where("roomId", "==", selectedRoom?.id));
+    const groupMembersRef = collection(db, "groupMembers");
+    const q = query(
+      groupMembersRef,
+      where("roomId", "==", selectedRoom?.id),
+      where("userId", "==", user?.uid),
+    );
 
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
       // Add a new document if it doesn't exist
-      await addDoc(favoritesRef, {
+      await addDoc(groupMembersRef, {
         roomId: selectedRoom?.id,
-        active: active,
-        title: selectedRoom?.title,
+        userId: user?.uid,
+        isFavorite: active,
       });
     } else {
       // Get the first document from the query snapshot
       const document = querySnapshot.docs[0];
-      const docRef = doc(db, "favorites", document.id);
+      const docRef = doc(db, "groupMembers", document.id);
       const docSnapshot = await getDoc(docRef);
 
       if (docSnapshot.exists()) {
         // Update the existing document
         await updateDoc(docRef, {
-          active: active,
+          isFavorite: active,
         });
       }
     }
   };
 
+  // Replace navigate function calls with history.push
   return (
-    <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
-      <div className="flex items-center justify-between  border-b border-gray-300">
+    <div className="shadow-md flex flex-col px-10 h-full flex-grow">
+      <div className="flex items-center justify-between border-b border-gray-300">
         <div className="flex items-center">
           <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
           <IconButton
@@ -104,8 +114,8 @@ const Chat: React.FC<ChatProps> = () => {
             <StarBorderIcon />
           </IconButton>
         </div>
-        <div className="flex  gap-2 items-center justify-end">
-          <Tooltip title="group members" arrow>
+        <div className="flex gap-2 items-center justify-end">
+          <Tooltip title="Group members" arrow>
             <IconButton
               onClick={() => {
                 navigate(`/room/${selectedRoom?.id}/members`);
@@ -139,9 +149,7 @@ const Chat: React.FC<ChatProps> = () => {
         ))}
         <div ref={divRef}></div>
       </div>
-      {selectedRoom?.id && (
-        <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />
-      )}
+      {selectedRoom?.id && <ChatInput />}
     </div>
   );
 };

@@ -1,101 +1,161 @@
-import React, { useState, FormEvent, useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import {
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  orderBy,
+  getDoc,
+} from "firebase/firestore";
+import ChatInput from "./ChatInput";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import PeopleIcon from "@mui/icons-material/People";
+import { IconButton, Tooltip } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../firebase";
-import { addDoc, collection, doc, Timestamp } from "firebase/firestore";
-import Paper from "@mui/material/Paper";
-import TagFacesIcon from "@mui/icons-material/TagFaces";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
-import Divider from "@mui/material/Divider";
-import SendIcon from "@mui/icons-material/Send";
+import Message, { MessageProps } from "./Message";
+import { useRedux } from "../redux/reduxStateContext";
+import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
-import EmojiPicker from "emoji-picker-react";
-import { useClickAway } from "ahooks";
-import { Tooltip } from "@mui/material";
 
-interface ChatInputProps {
-  roomId: string;
-  title: string;
-}
-
-const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
+interface ChatProps {}
+const Chat: React.FC<ChatProps> = () => {
+  const divRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const { selectedRoom, setFavorite } = useRedux(); // Assuming currentUser is in the redux state
+  const [link, setLink] = useState<string>("");
+  const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  const [messageValue, setMessageValue] = useState<string>("");
-  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
-  const ref = useRef(null);
 
-  useClickAway(() => {
-    setShowEmojiPicker(false);
-  }, ref);
+  let docRef;
 
-  const addMessage = async (e?: FormEvent<HTMLFormElement>) => {
-    if (messageValue) {
-      e?.preventDefault();
-      const docRef = doc(collection(db, "rooms"), roomId);
-      await addDoc(collection(docRef, "messages"), {
-        message: messageValue,
-        userName: user?.displayName,
-        userImage: user?.photoURL,
-        timestamp: Timestamp.now(),
-        userId: user?.uid,
-      });
-      setMessageValue("");
+  useEffect(() => {
+    if (selectedRoom) {
+      docRef = doc(collection(db, "rooms"), selectedRoom.id);
     }
+  }, [selectedRoom]);
+
+  if (selectedRoom) {
+    docRef = doc(collection(db, "rooms"), selectedRoom.id);
+  }
+
+  const [messages] = useCollection(
+    docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
+  );
+
+  useEffect(() => {
+    if (containerRef.current)
+      if (
+        containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
+          containerRef.current?.clientHeight + 200 ||
+        containerRef.current?.scrollTop === 0
+      ) {
+        divRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+  }, [messages]);
+
+  const getRoomLink = async () => {
+    if (!selectedRoom) return;
+    const snap = await getDoc(doc(db, "rooms", selectedRoom?.id));
+    setLink(snap.data()?.link);
   };
 
-  const onEmojiClick = (event: any) => {
-    setMessageValue((prevInput) => prevInput + event.emoji);
-  };
+  useEffect(() => {
+    getRoomLink();
+  }, [selectedRoom]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      addMessage();
+  const toggleFavorite = async (active = !selectedRoom?.favorite) => {
+    if (!selectedRoom) return;
+
+    setFavorite(active);
+
+    const groupMembersRef = collection(db, "groupMembers");
+    const q = query(
+      groupMembersRef,
+      where("roomId", "==", selectedRoom?.id),
+      where("userId", "==", user?.uid),
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      // Add a new document if it doesn't exist
+      await addDoc(groupMembersRef, {
+        roomId: selectedRoom?.id,
+        userId: user?.uid,
+        isFavorite: active,
+        nickname: user?.displayName,
+        avatar: user?.photoURL,
+      });
+    } else {
+      // Get the first document from the query snapshot
+      const document = querySnapshot.docs[0];
+      const docRef = doc(db, "groupMembers", document.id);
+      const docSnapshot = await getDoc(docRef);
+
+      if (docSnapshot.exists()) {
+        // Update the existing document
+        await updateDoc(docRef, {
+          isFavorite: active,
+        });
+      }
     }
   };
 
   return (
-    <div className="flex w-[calc(100%-40px)] p-5" ref={ref}>
-      <Paper
-        onSubmit={addMessage}
-        component="form"
-        className="p-2.5 flex items-center w-full"
-      >
-        {showEmojiPicker && (
-          <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>
-            <EmojiPicker onEmojiClick={onEmojiClick} />
-          </div>
-        )}
-        <IconButton
-          className="p-2.5"
-          aria-label="menu"
-          onClick={() => setShowEmojiPicker((val) => !val)}
-        >
-          <TagFacesIcon />
-        </IconButton>
-        <InputBase
-          className="ml-2.5 flex-1"
-          type="text"
-          placeholder={`Message to #${title}`}
-          value={messageValue}
-          onChange={(e) => setMessageValue(e.target.value)}
-          inputProps={{ "aria-label": "message input" }}
-          autoFocus
-          multiline
-          onKeyDown={handleKeyDown} // Handle Enter key press
-        />
-        <Divider className="h-7 mx-0.5" orientation="vertical" />
-        <Tooltip title={"Send"} arrow>
+    <div className="shadow-md flex flex-col px-10 h-full flex-grow">
+      <div className="flex items-center justify-between border-b border-gray-300">
+        <div className="flex items-center">
+          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
           <IconButton
-            color="primary"
-            className="p-2.5"
-            aria-label="send"
-            type="submit"
+            color={selectedRoom?.favorite ? "warning" : undefined}
+            onClick={() => toggleFavorite()}
           >
-            <SendIcon />
+            <StarBorderIcon />
           </IconButton>
-        </Tooltip>
-      </Paper>
+        </div>
+        <div className="flex gap-2 items-center justify-end">
+          <Tooltip title="Group members" arrow>
+            <IconButton
+              onClick={() => {
+                navigate(`/room/${selectedRoom?.id}/members`);
+              }}
+            >
+              <PeopleIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Details" arrow>
+            <IconButton
+              onClick={() => {
+                if (link) {
+                  window.open(link);
+                }
+              }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </div>
+      <div
+        aria-label="message container"
+        tabIndex={0}
+        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
+        ref={containerRef}
+      >
+        {messages?.docs.map((doc) => (
+          <Message key={doc.id} {...(doc.data() as MessageProps)} />
+        ))}
+        <div ref={divRef}></div>
+      </div>
+      {selectedRoom?.id && <ChatInput />}
     </div>
   );
 };
 
-export default ChatInput;
+export default Chat;
