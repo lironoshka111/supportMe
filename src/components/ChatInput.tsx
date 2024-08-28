@@ -35,10 +35,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
       const isInappropriate = await analyzeMessage(messageValue);
       if (isInappropriate.has_profanity) {
         alert('Warning: Inappropriate message. We are censoring it.');
-        setMessageValue(isInappropriate.censored);
       }
         await addDoc(collection(docRef, "messages"), {
-          message: messageValue,
+          message: `${isInappropriate.censored}`,
           userName: user?.displayName,
           userImage: user?.photoURL,
           timestamp: Timestamp.now(),

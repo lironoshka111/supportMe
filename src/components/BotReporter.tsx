@@ -14,13 +14,8 @@ export const analyzeMessage = async (message: string) => {
             }
         );
 
-        const result = response.data;
-        console.log('Original:', result.original);
-        console.log('Censored:', result.censored);
-        console.log('Has Profanity:', result.has_profanity);
-
         // Optionally set the result in a state or return it
-        return result;
+        return response.data;
 
     } catch (error) {
         console.error("Error fetching profanity analysis:", error);
