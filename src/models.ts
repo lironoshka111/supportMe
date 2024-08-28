@@ -12,12 +12,12 @@ interface Room {
   roomTitle: string;
   location?: string;
   additionalDataLink?: string;
-  isFavorite?: boolean;
   memberIds: GroupMemberType[];
   meetingUrl?: string;
   isOnline?: boolean;
   maxMembers?: number;
-  admin: UserType;
+  adminId: string;
+  description?: string;
   restrictedUserIds?: string[];
 }
 
@@ -38,7 +38,7 @@ interface Reply {
   sentTimestamp: number;
   senderUserId: string;
   messageId: string;
-  reactions: string[];
+  reactions: string[]; // Reaction IDs
 }
 
 // Reactions Subcollection within Messages and Replies
@@ -52,7 +52,8 @@ interface Reaction {
 interface GroupMember {
   groupMemberId: string;
   userId: string;
-  groupId: string;
+  roomId: string;
+  isFavorite?: boolean;
   isAnonymous?: boolean;
   nickname?: string;
   avatar?: string;
