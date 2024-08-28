@@ -25,10 +25,9 @@ function App() {
                 path="/"
                 element={
                   <HomePage>
-                    <h4>😇</h4>
-                    <h3>Please choose or create your channel</h3>
+                    <h3>Please choose or create your room</h3>
                     <h5>
-                      Other functions may not work now, please select a channel
+                      Other functions may not work now, please select a room
                     </h5>
                   </HomePage>
                 }
