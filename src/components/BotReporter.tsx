@@ -1,30 +1,29 @@
 import axios from 'axios';
-import {firebaseConfig} from "../firebase";
-export const analyzeMessage = async (message: string): Promise<boolean> => {
-    const url = `https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze?key=${firebaseConfig.apiKey}`;
 
-    const requestData = {
-        comment: { text: message },
-        languages: ["en"],
-        requestedAttributes: {
-            TOXICITY: {},
-            SEVERE_TOXICITY: {}, // Add SEVERE_TOXICITY
-            IDENTITY_ATTACK: {}, // Add IDENTITY_ATTACK
-            THREAT: {}, // Add THREAT
-        },
-    };
+export const analyzeMessage = async (message: string) => {
 
     try {
-        const response = await axios.post(url, requestData);
-        const toxicityScore = response.data.attributeScores.TOXICITY.summaryScore.value;
-        const severeToxicityScore = response.data.attributeScores.SEVERE_TOXICITY.summaryScore.value;
-        const identityAttackScore = response.data.attributeScores.IDENTITY_ATTACK.summaryScore.value;
-        const threatScore = response.data.attributeScores.THREAT.summaryScore.value;
+        const apiKey = process.env.REACT_APP_NINJAS_API_KEY as string;// Replace with your actual API key
+        const response = await axios.get(
+            `https://api.api-ninjas.com/v1/profanityfilter?text=${encodeURIComponent(message)}`,
+            {
+                headers: {
+                    'X-Api-Key': apiKey,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
 
-        // Combine scores for a more comprehensive check
-        return toxicityScore > 0.7 || severeToxicityScore > 0.5 || identityAttackScore > 0.5 || threatScore > 0.5;
+        const result = response.data;
+        console.log('Original:', result.original);
+        console.log('Censored:', result.censored);
+        console.log('Has Profanity:', result.has_profanity);
+
+        // Optionally set the result in a state or return it
+        return result;
+
     } catch (error) {
-        console.error('Error analyzing message:', error);
-        return false;
+        console.error("Error fetching profanity analysis:", error);
     }
 };
+

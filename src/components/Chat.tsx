@@ -8,8 +8,7 @@ import {
   updateDoc,
   doc,
   orderBy,
-  getDoc,
-  deleteDoc, // Import deleteDoc for deleting messages
+  getDoc
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -94,20 +93,6 @@ const Chat: React.FC<ChatProps> = () => {
     }
   };
 
-  const handleDeleteMessage = async (id: string) => {
-    try {
-      if (selectedRoom) {
-        const messageRef = doc(
-            collection(db, "rooms", selectedRoom.id, "messages"),
-            id
-        );
-        await deleteDoc(messageRef); // Delete the message from Firestore
-      }
-    } catch (error) {
-      console.error("Error deleting message: ", error);
-    }
-  };
-
   return (
       <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
         <div className="flex items-center justify-between  border-b border-gray-300">
@@ -155,7 +140,6 @@ const Chat: React.FC<ChatProps> = () => {
                   key={doc.id}
                   id={doc.id} // Pass the message ID
                   {...(doc.data() as Omit<MessageProps, 'id'>)}
-                  onDelete={handleDeleteMessage} // Pass the delete handler
               />
           ))}
           <div ref={divRef}></div>

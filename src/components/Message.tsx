@@ -16,7 +16,6 @@ export interface MessageProps {
   userName: string;
   userImage: string;
   timestamp: Timestamp;
-  onDelete: (id: string) => void; // Callback to remove the message from the parent component
 }
 
 const emojis = [
@@ -33,23 +32,15 @@ const Message: React.FC<MessageProps> = ({
                                            message,
                                            userImage,
                                            userName,
-                                           timestamp,
-                                           onDelete,
+                                           timestamp
                                          }) => {
   const [user] = useAuthState(auth);
   const ref = useRef(null);
   const isHovering = useHover(ref);
   const [emoji, setEmoji] = useState<JSX.Element>();
 
-  const handleDelete = async () => {
-    const isInappropriate = await analyzeMessage(message);
-    if (isInappropriate) {
-      onDelete(id); // Trigger the deletion callback
-    }
-  };
-
   return (
-      <div className="flex flex-col F rounded-md p-3" ref={ref} onClick={handleDelete}>
+      <div className="flex flex-col F rounded-md p-3" ref={ref}>
         <div className="bg-pink-50 rounded-md p-3">
           {user?.displayName === userName ? (
               <MyMessageContainer>
