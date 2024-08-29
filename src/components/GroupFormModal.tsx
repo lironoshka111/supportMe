@@ -108,10 +108,10 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   };
 
   const addChannel = async () => {
-    const res = await addDoc(collection(db, "rooms"), {
-      name: diseaseDetails?.name,
-      link: diseaseDetails?.link,
-      maxParticipants,
+    const roomRef = await addDoc(collection(db, "rooms"), {
+      roomTitle: diseaseDetails?.name,
+      additionalDataLink: diseaseDetails?.link,
+      maxMembers: maxParticipants,
       location,
       isOnline,
       contactNumber,
@@ -119,13 +119,23 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
       adminId: user?.uid,
     });
 
+    // Add the user who created the room as a member in the groupMembers collection
+    await addDoc(collection(db, "groupMembers"), {
+      userId: user?.uid,
+      roomId: roomRef.id,
+      isFavorite: false,
+      isAnonymous: false,
+      nickname: user?.displayName,
+      avatar: user?.photoURL,
+    });
+
     setSelectedRoom({
-      id: res.id as string,
+      id: roomRef.id as string,
       title: diseaseDetails?.name as string,
       linkToData: diseaseDetails?.link,
       favorite: false,
     });
-    navigate(`/room/${res.id}`); // Navigate to the newly created rooms
+    navigate(`/room/${roomRef.id}`); // Navigate to the newly created rooms
     resetForm();
   };
 

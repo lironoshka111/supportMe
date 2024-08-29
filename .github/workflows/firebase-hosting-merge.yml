@@ -11,11 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Copy .env.dev to .env
+        run: cp src/envs/.env.dev .env
+
       - name: Install dependencies
         run: yarn install
 
       - name: Build project
-        run: yarn run build
+        run: |
+          CI=false yarn run build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
