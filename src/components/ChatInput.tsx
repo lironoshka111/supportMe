@@ -11,8 +11,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import EmojiPicker from "emoji-picker-react";
 import { useClickAway } from "ahooks";
 import { Tooltip } from "@mui/material";
-import {analyzeMessage} from "./BotReporter";
-
+import { analyzeMessage } from "./BotReporter";
+import { toast } from "react-toastify";
 interface ChatInputProps {
   roomId: string;
   title: string;
@@ -34,17 +34,17 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
       const docRef = doc(collection(db, "rooms"), roomId);
       const isInappropriate = await analyzeMessage(messageValue);
       if (isInappropriate.has_profanity) {
-        alert('Warning: Inappropriate message. We are censoring it.');
+        toast.warning("Warning: Inappropriate message. We are censoring it.");
       }
-        await addDoc(collection(docRef, "messages"), {
-          message: `${isInappropriate.censored}`,
-          userName: user?.displayName,
-          userImage: user?.photoURL,
-          timestamp: Timestamp.now(),
-          userId: user?.uid,
-        });
-      }
-      setMessageValue("");
+      await addDoc(collection(docRef, "messages"), {
+        message: `${isInappropriate.censored}`,
+        userName: user?.displayName,
+        userImage: user?.photoURL,
+        timestamp: Timestamp.now(),
+        userId: user?.uid,
+      });
+    }
+    setMessageValue("");
   };
 
   const onEmojiClick = (event: any) => {

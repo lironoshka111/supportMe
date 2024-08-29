@@ -9,12 +9,15 @@ import { auth } from "./firebase";
 import Login from "./components/Login";
 import AboutPage from "./components/AboutPage";
 import MembersPage from "./components/MembersPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [user, loading] = useAuthState(auth);
 
   return (
     <AppContainer>
+      <ToastContainer />
       {user ? (
         <>
           <Header user={user} />

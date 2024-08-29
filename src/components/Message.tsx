@@ -7,11 +7,9 @@ import { auth } from "../firebase";
 import { useHover } from "ahooks";
 import { ReactionBarSelector } from "@charkour/react-reactions";
 import { jsx } from "@emotion/react";
-import {analyzeMessage} from "./BotReporter";
 import JSX = jsx.JSX;
 
 export interface MessageProps {
-  id: string;
   message: string;
   userName: string;
   userImage: string;
@@ -26,84 +24,81 @@ const emojis = [
   { node: <div>😢</div>, label: "sad", key: "sad" },
   { node: <div>😡</div>, label: "angry", key: "angry" },
 ];
-
 const Message: React.FC<MessageProps> = ({
-                                           id,
-                                           message,
-                                           userImage,
-                                           userName,
-                                           timestamp
-                                         }) => {
+  message,
+  userImage,
+  userName,
+  timestamp,
+}) => {
   const [user] = useAuthState(auth);
   const ref = useRef(null);
   const isHovering = useHover(ref);
   const [emoji, setEmoji] = useState<JSX.Element>();
-
   return (
-      <div className="flex flex-col F rounded-md p-3" ref={ref}>
-        <div className="bg-pink-50 rounded-md p-3">
-          {user?.displayName === userName ? (
-              <MyMessageContainer>
-                <Avatar
-                    variant="rounded"
-                    src={userImage}
-                    sx={{ width: 50, height: 50 }}
-                />
-                <MyMessageInfo tabIndex={0}>
-                  <MyMessageInfoTop>
-                    <h4 aria-label="you" className="">
-                      YOU
-                    </h4>
-                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-                  </MyMessageInfoTop>
-                  <MessageText aria-label={`message ${message}`}>
-                    {message}
-                  </MessageText>
-                </MyMessageInfo>
-              </MyMessageContainer>
-          ) : (
-              <MessageContainer>
-                <Avatar
-                    variant="rounded"
-                    src={userImage}
-                    sx={{ width: 50, height: 50 }}
-                />
-                <MessageInfo tabIndex={0}>
-                  <MessageInfoTop>
-                    <h4 aria-label={`user name ${userName}`}>{userName}</h4>
-                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-                  </MessageInfoTop>
-                  <MessageText aria-label={`message ${message}`}>
-                    {message}
-                  </MessageText>
-                </MessageInfo>
-              </MessageContainer>
-          )}
-        </div>
-        {isHovering ? (
-            <ReactionBarSelector
-                reactions={emojis}
-                iconSize={10}
-                onSelect={(label) => {
-                  const foundEmoji = emojis.find(
-                      (emoji) => emoji.key === label,
-                  )?.node;
-                  if (!foundEmoji) {
-                    return;
-                  }
-                  if (foundEmoji?.toString() === emoji?.toString()) {
-                    setEmoji(undefined);
-                    return;
-                  }
-
-                  setEmoji(foundEmoji);
-                }}
+    <div className="flex flex-col F rounded-md p-3" ref={ref}>
+      <div className="bg-pink-50 rounded-md p-3">
+        {user?.displayName === userName ? (
+          <MyMessageContainer>
+            <Avatar
+              variant="rounded"
+              src={userImage}
+              sx={{ width: 50, height: 50 }}
             />
+            <MyMessageInfo tabIndex={0}>
+              <MyMessageInfoTop>
+                <h4 aria-label="you" className="">
+                  YOU
+                </h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+              </MyMessageInfoTop>
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>
+            </MyMessageInfo>
+          </MyMessageContainer>
         ) : (
-            <div className="h-[20px]" />
+          <MessageContainer>
+            <Avatar
+              variant="rounded"
+              src={userImage}
+              sx={{ width: 50, height: 50 }}
+            />
+            <MessageInfo tabIndex={0}>
+              <MessageInfoTop>
+                <h4 aria-label={`user name ${userName}`}>{userName}</h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+              </MessageInfoTop>
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>
+            </MessageInfo>
+          </MessageContainer>
         )}
-        {emoji ?? <div className="h-[10px]" />}
       </div>
+      {isHovering ? (
+        <ReactionBarSelector
+          reactions={emojis}
+          iconSize={10}
+          onSelect={(label) => {
+            const foundEmoji = emojis.find(
+              (emoji) => emoji.key === label,
+            )?.node;
+            if (!foundEmoji) {
+              return;
+            }
+            if (foundEmoji?.toString() === emoji?.toString()) {
+              setEmoji(undefined);
+              return;
+            }
+
+            setEmoji(foundEmoji);
+          }}
+        />
+      ) : (
+        <div className="h-[20px]" />
+      )}
+      {emoji ?? <div className="h-[10px]" />}
+    </div>
   );
 };
 
@@ -114,7 +109,7 @@ const MessageContainer = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  margin: 5px 0px;
+  margin: 5px 0;
   justify-content: flex-end;
 `;
 const MyMessageContainer = styled.div`

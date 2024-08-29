@@ -8,7 +8,7 @@ import {
   updateDoc,
   doc,
   orderBy,
-  getDoc
+  getDoc,
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -22,7 +22,6 @@ import { useRedux } from "../redux/reduxStateContext";
 import { useNavigate } from "react-router-dom";
 
 interface ChatProps {}
-
 const Chat: React.FC<ChatProps> = () => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -32,26 +31,18 @@ const Chat: React.FC<ChatProps> = () => {
 
   let docRef;
 
-  useEffect(() => {
-    if (selectedRoom) {
-      docRef = doc(collection(db, "rooms"), selectedRoom.id);
-    }
-  }, [selectedRoom]);
-
   if (selectedRoom) {
     docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }
-
   const [messages] = useCollection(
-      docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
+    docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
   );
-
   useEffect(() => {
     if (containerRef.current)
       if (
-          containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
+        containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
           containerRef.current?.clientHeight + 200 ||
-          containerRef.current?.scrollTop === 0
+        containerRef.current?.scrollTop === 0
       ) {
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
@@ -94,60 +85,56 @@ const Chat: React.FC<ChatProps> = () => {
   };
 
   return (
-      <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
-        <div className="flex items-center justify-between  border-b border-gray-300">
-          <div className="flex items-center">
-            <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
+    <div className=" shadow-md flex flex-col  px-10 h-full flex-grow">
+      <div className="flex items-center justify-between  border-b border-gray-300">
+        <div className="flex items-center">
+          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
+          <IconButton
+            color={selectedRoom?.favorite ? "warning" : undefined}
+            onClick={() => toggleFavorite()}
+          >
+            <StarBorderIcon />
+          </IconButton>
+        </div>
+        <div className="flex  gap-2 items-center justify-end">
+          <Tooltip title="group members" arrow>
             <IconButton
-                color={selectedRoom?.favorite ? "warning" : undefined}
-                onClick={() => toggleFavorite()}
+              onClick={() => {
+                navigate(`/room/${selectedRoom?.id}/members`);
+              }}
             >
-              <StarBorderIcon />
+              <PeopleIcon />
             </IconButton>
-          </div>
-          <div className="flex  gap-2 items-center justify-end">
-            <Tooltip title="group members" arrow>
-              <IconButton
-                  onClick={() => {
-                    navigate(`/room/${selectedRoom?.id}/members`);
-                  }}
-              >
-                <PeopleIcon />
-              </IconButton>
-            </Tooltip>
+          </Tooltip>
 
-            <Tooltip title="Details" arrow>
-              <IconButton
-                  onClick={() => {
-                    if (link) {
-                      window.open(link);
-                    }
-                  }}
-              >
-                <HelpOutlineIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
+          <Tooltip title="Details" arrow>
+            <IconButton
+              onClick={() => {
+                if (link) {
+                  window.open(link);
+                }
+              }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
+          </Tooltip>
         </div>
-        <div
-            aria-label="message container"
-            tabIndex={0}
-            className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
-            ref={containerRef}
-        >
-          {messages?.docs.map((doc) => (
-              <Message
-                  key={doc.id}
-                  id={doc.id} // Pass the message ID
-                  {...(doc.data() as Omit<MessageProps, 'id'>)}
-              />
-          ))}
-          <div ref={divRef}></div>
-        </div>
-        {selectedRoom?.id && (
-            <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />
-        )}
       </div>
+      <div
+        aria-label="message container"
+        tabIndex={0}
+        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
+        ref={containerRef}
+      >
+        {messages?.docs.map((doc) => (
+          <Message key={doc.id} {...(doc.data() as MessageProps)} />
+        ))}
+        <div ref={divRef}></div>
+      </div>
+      {selectedRoom?.id && (
+        <ChatInput roomId={selectedRoom.id} title={selectedRoom.title} />
+      )}
+    </div>
   );
 };
 
