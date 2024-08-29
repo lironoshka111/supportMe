@@ -1,7 +1,7 @@
+import React, { useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Avatar } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
-import React, { useRef, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { useHover } from "ahooks";
@@ -70,7 +70,7 @@ const Message: React.FC<MessageProps> = ({
               </MessageInfoTop>
               <MessageText aria-label={`message ${message}`}>
                 {message}
-              </MessageText>{" "}
+              </MessageText>
             </MessageInfo>
           </MessageContainer>
         )}
@@ -109,7 +109,7 @@ const MessageContainer = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
-  margin: 5px 0px;
+  margin: 5px 0;
   justify-content: flex-end;
 `;
 const MyMessageContainer = styled.div`

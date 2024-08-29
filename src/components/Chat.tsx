@@ -31,11 +31,6 @@ const Chat: React.FC<ChatProps> = () => {
 
   let docRef;
 
-  useEffect(() => {
-    if (selectedRoom) {
-      docRef = doc(collection(db, "rooms"), selectedRoom.id);
-    }
-  }, [selectedRoom]);
   if (selectedRoom) {
     docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }
@@ -71,20 +66,17 @@ const Chat: React.FC<ChatProps> = () => {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      // Add a new document if it doesn't exist
       await addDoc(favoritesRef, {
         roomId: selectedRoom?.id,
         active: active,
         title: selectedRoom?.title,
       });
     } else {
-      // Get the first document from the query snapshot
       const document = querySnapshot.docs[0];
       const docRef = doc(db, "favorites", document.id);
       const docSnapshot = await getDoc(docRef);
 
       if (docSnapshot.exists()) {
-        // Update the existing document
         await updateDoc(docRef, {
           active: active,
         });
