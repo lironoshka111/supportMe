@@ -116,5 +116,5 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
     background: #722311;
   }
 
-  background: ${(props) => (props.selected ? "#b43d35" : "none")};
+  background: ${(props) => (props.selected ? "#591814" : "none")};
 `;
