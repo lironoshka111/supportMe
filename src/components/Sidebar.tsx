@@ -147,8 +147,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               const roomData = roomsData.get(memberData.roomId);
               return (
                 <SidebarOption
-                  key={roomData?.roomId}
-                  id={roomData?.roomId}
+                  key={memberData?.roomId}
+                  id={memberData?.roomId}
                   Icon={TagIcon}
                   title={roomData?.roomTitle || "Unnamed Room"}
                   isChannel={true}

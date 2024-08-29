@@ -67,6 +67,7 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   return (
     <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
       <OptionContainer
+        key={title}
         title={title}
         Icon={Icon}
         onClick={() => {
