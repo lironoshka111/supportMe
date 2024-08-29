@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-slack-color overflow-hidden">
+    <div className="flex items-center w-full p-2.5 bg-orange-700 overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
         <Tooltip title={`Menu`} arrow>
           <Avatar

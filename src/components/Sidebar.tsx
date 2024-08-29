@@ -168,7 +168,7 @@ const SidebarContainer = styled.div`
   width: 260px;
   display: flex;
   flex-direction: column;
-  background: var(--slack-color);
+  background: var(--bar-color);
   height: 100%;
   overflow-y: auto; /* Add inner scrolling */
   resize: horizontal;

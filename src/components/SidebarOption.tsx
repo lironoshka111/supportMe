@@ -100,17 +100,21 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
   user-select: none;
   width: 95%;
   gap: 10px;
+
   & > svg {
     color: white;
   }
+
   p {
     font-size: 12px;
     color: white;
     font-weight: 500;
   }
+
   &:hover {
     opacity: 0.9;
-    background: #b98a92;
+    background: #722311;
   }
-  background: ${(props) => (props.selected ? "#b98a92" : "none")};
+
+  background: ${(props) => (props.selected ? "#b43d35" : "none")};
 `;

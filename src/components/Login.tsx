@@ -56,12 +56,12 @@ const LoginContainer = styled.div`
   align-items: center;
   justify-content: center;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
-  background-color: #ceb6b6;
+  background-color: #c7a298;
   height: 100vh;
   background-image: url("/images/background.png");
   background-size: cover;
 
   button {
-    background-color: rgba(152, 81, 81, 0.82);
+    background-color: rgba(215, 166, 156, 0.82);
   }
 `;
