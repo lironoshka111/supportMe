@@ -8,7 +8,6 @@ interface User {
 
 // Rooms Collection
 interface Room {
-  roomId: string;
   roomTitle: string;
   location?: string;
   additionalDataLink?: string;
@@ -49,7 +48,6 @@ interface Reaction {
 
 // GroupMembers Collection
 interface GroupMember {
-  groupMemberId: string;
   userId: string;
   roomId: string;
   isFavorite?: boolean;

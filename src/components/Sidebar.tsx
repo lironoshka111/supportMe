@@ -19,6 +19,8 @@ import GroupFormModal from "./GroupFormModal";
 import { useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
 import { GroupMember, Room } from "../models";
+import { AddCircle } from "@mui/icons-material";
+import { GroupSearchModal } from "./SearchGroups";
 
 interface SidebarProps {
   user: User;
@@ -36,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
+  const [groupSearchModalOpen, setGroupSearchModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
   const { setSelectedRoom } = useRedux();
@@ -123,6 +126,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
         <SidebarOptionList>
           <OptionContainer
+            Icon={AddCircle}
+            title={"Join To Group"}
+            onClick={setGroupSearchModalOpen.setTrue}
+          />
+        </SidebarOptionList>
+
+        <SidebarOptionList>
+          <OptionContainer
             Icon={MessageIcon}
             title={"Add New Group"}
             onClick={setNewRoomModalOpen.setTrue}
@@ -189,10 +200,18 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           Room selected successfully!
         </Alert>
       </Snackbar>
-      <GroupFormModal
-        open={newRoomModalOpen}
-        setOpen={setNewRoomModalOpen.set}
-      />
+      {newRoomModalOpen && (
+        <GroupFormModal
+          open={newRoomModalOpen}
+          setOpen={setNewRoomModalOpen.set}
+        />
+      )}
+      {groupSearchModalOpen && (
+        <GroupSearchModal
+          open={groupSearchModalOpen}
+          setOpen={setGroupSearchModalOpen.set}
+        />
+      )}
     </>
   );
 };

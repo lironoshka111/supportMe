@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -60,12 +60,6 @@ const GeneticDiseaseSearch = ({
         onInputChange={(event, newInputValue) => {
           setInputValue(newInputValue);
           fetchDiseases(newInputValue);
-        }}
-        onClose={() => {
-          if (!value) return;
-          //  const isExist = isRoomExist(value) as unknown as Room;
-          //if (!isExist?.id) return;
-          // return navigate(`/room/${isExist?.id}`);
         }}
         value={value} // Set value prop to controlled state
         onChange={(event: any, newValue: string | null) => {
