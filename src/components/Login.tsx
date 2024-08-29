@@ -35,7 +35,7 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
               width: "270px",
               height: "45px",
               borderRadius: "10%",
-              color: "black",
+              color: "white",
               ":hover": {
                 color: "white",
                 background: "grey"
@@ -63,6 +63,6 @@ const LoginContainer = styled.div`
   background-size: cover;
 
   button {
-    background-color: rgba(215, 166, 156, 0.82);
+    background-color: rgba(56, 37, 36, 0.82);
   }
 `;
