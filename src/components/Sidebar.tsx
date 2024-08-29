@@ -80,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     setSelectedRoom({
       id: roomId,
       title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+      linkToData: roomsData.get(roomId)?.additionalDataLink,
     });
     navigate(`/room/${roomId}`);
   };
