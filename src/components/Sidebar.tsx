@@ -5,7 +5,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { collection } from "firebase/firestore";
+import { collection, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
@@ -18,20 +18,26 @@ import { useRedux } from "../redux/reduxStateContext";
 import GroupFormModal from "./GroupFormModal";
 import { useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
+import { GroupMember, Room } from "../models";
 
 interface SidebarProps {
   user: User;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
-  const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
-  const [snapshotFavorites, isLoadingFavorites, errorFavorites] = useCollection(
-    collection(db, "favorites"),
+  const userRoomsQuery = query(
+    collection(db, "groupMembers"),
+    where("userId", "==", user.uid),
   );
+
+  const [userRoomsSnapshot, loadingUserRooms, errorUserRooms] =
+    useCollection(userRoomsQuery);
+
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
+  const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
   const { setSelectedRoom } = useRedux();
   const navigate = useNavigate();
 
@@ -47,14 +53,34 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   };
 
   useEffect(() => {
-    if (loading || !snapshot?.size) return;
-    setOpen(true);
-  }, [snapshot]);
+    if (loadingUserRooms || !userRoomsSnapshot?.size) return;
 
-  const selectChannel = (roomId: string, roomTitle: string) => {
+    // Fetch room details based on userRoomsSnapshot
+    const fetchRoomDetails = async () => {
+      const roomsMap = new Map<string, Room>();
+
+      for (const memberDoc of userRoomsSnapshot.docs) {
+        const memberData = memberDoc.data() as GroupMember;
+        const roomRef = doc(db, "rooms", memberData.roomId);
+        const roomDoc = await getDoc(roomRef);
+
+        if (roomDoc) {
+          roomsMap.set(memberData.roomId, roomDoc.data() as Room);
+        }
+      }
+
+      setRoomsData(roomsMap);
+    };
+
+    fetchRoomDetails();
+    setOpen(true);
+  }, [userRoomsSnapshot, loadingUserRooms]);
+
+  const selectChannel = (roomId: string) => {
     setSelectedRoom({
       id: roomId,
-      title: roomTitle,
+      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+      linkToData: roomsData.get(roomId)?.additionalDataLink,
     });
     navigate(`/room/${roomId}`);
   };
@@ -62,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   return (
     <>
       <SidebarContainer>
-        {(error || errorFavorites) && (
+        {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
               <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
@@ -72,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             </Alert>
           </AlertWrapper>
         )}
-        {(loading || isLoadingFavorites) && (
+        {loadingUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="info">
               <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
@@ -107,19 +133,23 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <OptionContainer
             onClick={toggleRooms}
             Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
-            title={"Recent Rooms"}
+            title={"Your Rooms"}
           />
           {isRoomsOpen &&
-            snapshot?.docs.map((roomDoc) => (
-              <SidebarOption
-                key={roomDoc.id}
-                id={roomDoc.id}
-                Icon={TagIcon}
-                title={roomDoc.data().name as string}
-                isChannel={true}
-                selectChannel={selectChannel}
-              />
-            ))}
+            userRoomsSnapshot?.docs.map((memberDoc) => {
+              const memberData = memberDoc.data() as GroupMember;
+              const roomData = roomsData.get(memberData.roomId);
+              return (
+                <SidebarOption
+                  key={memberData?.roomId}
+                  id={memberData?.roomId}
+                  Icon={TagIcon}
+                  title={roomData?.roomTitle || "Unnamed Room"}
+                  isChannel={true}
+                  selectChannel={() => selectChannel(memberData.roomId)}
+                />
+              );
+            })}
         </SidebarOptionList>
 
         <SidebarOptionList>
@@ -130,18 +160,23 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             title={"Favorites"}
           />
           {isFavoritesOpen &&
-            snapshotFavorites?.docs
-              .filter((doc) => doc.data().active)
-              .map((roomDoc) => (
-                <SidebarOption
-                  key={roomDoc.data().roomId as string}
-                  id={roomDoc.data().roomId as string}
-                  Icon={TagIcon}
-                  title={roomDoc.data().title as string}
-                  isChannel={true}
-                  selectChannel={selectChannel}
-                />
-              ))}
+            userRoomsSnapshot?.docs
+              .filter((doc) => (doc.data() as GroupMember).isFavorite)
+              .map((favDoc) => {
+                const favData = favDoc.data() as GroupMember;
+                const roomData = roomsData.get(favData.roomId);
+
+                return (
+                  <SidebarOption
+                    key={favData?.roomId}
+                    id={favData?.roomId}
+                    Icon={TagIcon}
+                    title={roomData?.roomTitle || "Unnamed Favorite"}
+                    isChannel={true}
+                    selectChannel={() => selectChannel(favData.roomId)}
+                  />
+                );
+              })}
         </SidebarOptionList>
       </SidebarContainer>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
@@ -170,7 +205,7 @@ const SidebarContainer = styled.div`
   flex-direction: column;
   background: var(--slack-color);
   height: 100%;
-  overflow-y: auto; /* Add inner scrolling */
+  overflow-y: auto;
   resize: horizontal;
 `;
 
@@ -185,6 +220,7 @@ const SidebarTop = styled.div`
     cursor: pointer;
   }
 `;
+
 const SidebarInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -199,10 +235,11 @@ const SidebarInfo = styled.div`
     font-size: 12px;
   }
 `;
+
 const SidebarOptionList = styled.div`
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid #49274b;
   gap: 2px;
-  padding: 5px 0px;
+  padding: 5px 0;
 `;

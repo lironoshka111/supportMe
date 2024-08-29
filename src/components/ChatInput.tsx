@@ -11,27 +11,36 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import EmojiPicker from "emoji-picker-react";
 import { useClickAway } from "ahooks";
 import { Tooltip } from "@mui/material";
-import { analyzeMessage } from "./BotReporter";
+import { useRedux } from "../redux/reduxStateContext";
 import { toast } from "react-toastify";
-interface ChatInputProps {
-  roomId: string;
-  title: string;
-}
+import { analyzeMessage } from "../utils/analyzeMessage";
+interface ChatInputProps {}
 
-const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
+const ChatInput: React.FC<ChatInputProps> = () => {
   const [user] = useAuthState(auth);
+  const { selectedRoom } = useRedux(); // Assuming currentUser is in the redux state
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [messageValue, setMessageValue] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
-  const ref = useRef(null);
 
   useClickAway(() => {
     setShowEmojiPicker(false);
-  }, ref);
+  }, containerRef);
+
+  const onEmojiClick = (event: any) => {
+    setMessageValue((prevInput) => prevInput + event.emoji);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      addMessage();
+    }
+  };
 
   const addMessage = async (e?: FormEvent<HTMLFormElement>) => {
     if (messageValue) {
       e?.preventDefault();
-      const docRef = doc(collection(db, "rooms"), roomId);
+      const docRef = doc(collection(db, "rooms"), selectedRoom?.id);
       const isInappropriate = await analyzeMessage(messageValue);
       if (isInappropriate.has_profanity) {
         toast.warning("Warning: Inappropriate message. We are censoring it.");
@@ -47,18 +56,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
     setMessageValue("");
   };
 
-  const onEmojiClick = (event: any) => {
-    setMessageValue((prevInput) => prevInput + event.emoji);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      addMessage();
-    }
-  };
-
   return (
-    <div className="flex w-[calc(100%-40px)] p-5" ref={ref}>
+    <div className="flex w-[calc(100%-40px)] p-5" ref={containerRef}>
       <Paper
         onSubmit={addMessage}
         component="form"
@@ -79,7 +78,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ roomId, title }) => {
         <InputBase
           className="ml-2.5 flex-1"
           type="text"
-          placeholder={`Message to #${title}`}
+          placeholder={`Message to #${selectedRoom?.title ?? ""}`}
           value={messageValue}
           onChange={(e) => setMessageValue(e.target.value)}
           inputProps={{ "aria-label": "message input" }}
