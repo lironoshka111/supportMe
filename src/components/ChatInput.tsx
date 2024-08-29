@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, {useState, FormEvent, useRef, useEffect} from "react";
+import { auth, db } from "../firebase";
 import {
   addDoc,
   collection,
@@ -8,29 +9,33 @@ import {
   updateDoc,
   doc,
   orderBy,
-  getDoc,
-} from "firebase/firestore";
-import ChatInput from "./ChatInput";
-import StarBorderIcon from "@mui/icons-material/StarBorder";
-import PeopleIcon from "@mui/icons-material/People";
-import { IconButton, Tooltip } from "@mui/material";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
-import { useCollection } from "react-firebase-hooks/firestore";
-import { auth, db } from "../firebase";
-import Message, { MessageProps } from "./Message";
-import { useRedux } from "../redux/reduxStateContext";
-import { useNavigate } from "react-router-dom";
+  getDoc, Timestamp,
+} from "firebase/firestore";import Paper from "@mui/material/Paper";
+import TagFacesIcon from "@mui/icons-material/TagFaces";
+import IconButton from "@mui/material/IconButton";
+import InputBase from "@mui/material/InputBase";
+import Divider from "@mui/material/Divider";
+import SendIcon from "@mui/icons-material/Send";
 import { useAuthState } from "react-firebase-hooks/auth";
+import EmojiPicker from "emoji-picker-react";
+import { useClickAway } from "ahooks";
+import { Tooltip } from "@mui/material";
+import {useCollection} from "react-firebase-hooks/firestore";
+import { useRedux } from "../redux/reduxStateContext";
+import { toast } from "react-toastify";
+import { analyzeMessage } from "./BotReporter";
+interface ChatInputProps {
+  
+}
 
-interface ChatProps {}
-const Chat: React.FC<ChatProps> = () => {
-  const divRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const { selectedRoom, setFavorite } = useRedux(); // Assuming currentUser is in the redux state
-  const [link, setLink] = useState<string>("");
-  const navigate = useNavigate();
+const ChatInput: React.FC<ChatInputProps> = () => {
   const [user] = useAuthState(auth);
-
+  const { selectedRoom, setFavorite } = useRedux(); // Assuming currentUser is in the redux state
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const divRef = useRef<HTMLDivElement | null>(null);
+  const [messageValue, setMessageValue] = useState<string>("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const [link, setLink] = useState<string>("");
   let docRef;
 
   useEffect(() => {
@@ -64,9 +69,14 @@ const Chat: React.FC<ChatProps> = () => {
     setLink(snap.data()?.link);
   };
 
+
   useEffect(() => {
     getRoomLink();
   }, [selectedRoom]);
+
+  useClickAway(() => {
+    setShowEmojiPicker(false);
+  }, containerRef);
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     if (!selectedRoom) return;
@@ -82,6 +92,9 @@ const Chat: React.FC<ChatProps> = () => {
 
     const querySnapshot = await getDocs(q);
 
+    const onEmojiClick = (event: any) => {
+      setMessageValue((prevInput) => prevInput + event.emoji);
+    };
     if (querySnapshot.empty) {
       // Add a new document if it doesn't exist
       await addDoc(groupMembersRef, {
@@ -106,56 +119,80 @@ const Chat: React.FC<ChatProps> = () => {
     }
   };
 
-  return (
-    <div className="shadow-md flex flex-col px-10 h-full flex-grow">
-      <div className="flex items-center justify-between border-b border-gray-300">
-        <div className="flex items-center">
-          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
-          <IconButton
-            color={selectedRoom?.favorite ? "warning" : undefined}
-            onClick={() => toggleFavorite()}
-          >
-            <StarBorderIcon />
-          </IconButton>
-        </div>
-        <div className="flex gap-2 items-center justify-end">
-          <Tooltip title="Group members" arrow>
-            <IconButton
-              onClick={() => {
-                navigate(`/room/${selectedRoom?.id}/members`);
-              }}
-            >
-              <PeopleIcon />
-            </IconButton>
-          </Tooltip>
+  const onEmojiClick = (event: any) => {
+    setMessageValue((prevInput) => prevInput + event.emoji);
+  };
 
-          <Tooltip title="Details" arrow>
-            <IconButton
-              onClick={() => {
-                if (link) {
-                  window.open(link);
-                }
-              }}
-            >
-              <HelpOutlineIcon />
-            </IconButton>
-          </Tooltip>
-        </div>
-      </div>
-      <div
-        aria-label="message container"
-        tabIndex={0}
-        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
-        ref={containerRef}
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      addMessage();
+    }
+  };
+
+
+  const addMessage = async (e?: FormEvent<HTMLFormElement>) => {
+    if (messageValue) {
+      e?.preventDefault();
+      const docRef = doc(collection(db, "rooms"), roomId);
+      const isInappropriate = await analyzeMessage(messageValue);
+      if (isInappropriate.has_profanity) {
+        toast.warning("Warning: Inappropriate message. We are censoring it.");
+      }
+      await addDoc(collection(docRef, "messages"), {
+        message: `${isInappropriate.censored}`,
+        userName: user?.displayName,
+        userImage: user?.photoURL,
+        timestamp: Timestamp.now(),
+        userId: user?.uid,
+      });
+    }
+    setMessageValue("");
+  };
+
+  return (
+    <div className="flex w-[calc(100%-40px)] p-5" ref={containerRef}>
+      <Paper
+        onSubmit={addMessage}
+        component="form"
+        className="p-2.5 flex items-center w-full"
       >
-        {messages?.docs.map((doc) => (
-          <Message key={doc.id} {...(doc.data() as MessageProps)} />
-        ))}
-        <div ref={divRef}></div>
-      </div>
-      {selectedRoom?.id && <ChatInput />}
+        {showEmojiPicker && (
+          <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>
+            <EmojiPicker onEmojiClick={onEmojiClick} />
+          </div>
+        )}
+        <IconButton
+          className="p-2.5"
+          aria-label="menu"
+          onClick={() => setShowEmojiPicker((val) => !val)}
+        >
+          <TagFacesIcon />
+        </IconButton>
+        <InputBase
+          className="ml-2.5 flex-1"
+          type="text"
+          placeholder={`Message to #${selectedRoom?.title??""}`}
+          value={messageValue}
+          onChange={(e) => setMessageValue(e.target.value)}
+          inputProps={{ "aria-label": "message input" }}
+          autoFocus
+          multiline
+          onKeyDown={handleKeyDown} // Handle Enter key press
+        />
+        <Divider className="h-7 mx-0.5" orientation="vertical" />
+        <Tooltip title={"Send"} arrow>
+          <IconButton
+            color="primary"
+            className="p-2.5"
+            aria-label="send"
+            type="submit"
+          >
+            <SendIcon />
+          </IconButton>
+        </Tooltip>
+      </Paper>
     </div>
   );
 };
 
-export default Chat;
+export default ChatInput;

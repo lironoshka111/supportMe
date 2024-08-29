@@ -33,15 +33,6 @@ const Chat: React.FC<ChatProps> = () => {
 
   let docRef;
 
-  useEffect(() => {
-    if (selectedRoom) {
-      docRef = doc(collection(db, "rooms"), selectedRoom.id);
-    }
-  }, [selectedRoom]);
-
-  if (selectedRoom) {
-    docRef = doc(collection(db, "rooms"), selectedRoom.id);
-  }
 
   const [messages] = useCollection(
     docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
@@ -66,6 +57,7 @@ const Chat: React.FC<ChatProps> = () => {
 
   useEffect(() => {
     getRoomLink();
+    if(selectedRoom)docRef = doc(collection(db, "rooms"), selectedRoom.id);
   }, [selectedRoom]);
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
@@ -93,7 +85,6 @@ const Chat: React.FC<ChatProps> = () => {
       const docSnapshot = await getDoc(docRef);
 
       if (docSnapshot.exists()) {
-        // Update the existing document
         await updateDoc(docRef, {
           isFavorite: active,
         });

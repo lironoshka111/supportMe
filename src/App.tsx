@@ -9,12 +9,15 @@ import { auth } from "./firebase";
 import Login from "./components/Login";
 import AboutPage from "./components/AboutPage";
 import MembersPage from "./components/MembersPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [user, loading] = useAuthState(auth);
 
   return (
     <AppContainer>
+      <ToastContainer />
       {user ? (
         <>
           <Header user={user} />
@@ -25,10 +28,9 @@ function App() {
                 path="/"
                 element={
                   <HomePage>
-                    <h4>😇</h4>
-                    <h3>Please choose or create your channel</h3>
+                    <h3>Please choose or create your room</h3>
                     <h5>
-                      Other functions may not work now, please select a channel
+                      Other functions may not work now, please select a room
                     </h5>
                   </HomePage>
                 }
