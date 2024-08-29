@@ -18,7 +18,8 @@ jobs:
         run: yarn install
 
       - name: Build project
-        run: yarn run build
+        run: |
+          CI=false yarn run build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
