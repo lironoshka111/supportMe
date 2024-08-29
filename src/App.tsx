@@ -39,7 +39,15 @@ function App() {
           </AppBody>
         </>
       ) : (
-        <Login loading={loading} />
+          <>
+          <Routes>
+              <Route
+                  path="/"
+                  element={        <Login loading={loading} />}
+              />
+              <Route path="/about" element={<AboutPage />} />
+          </Routes>
+</>
       )}
     </AppContainer>
   );

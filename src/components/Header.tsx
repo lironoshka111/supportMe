@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-orange-700 overflow-hidden">
+    <div className="flex items-center w-full p-2.5 bg-orange-800 overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
         <Tooltip title={`Menu`} arrow>
           <Avatar
@@ -67,12 +67,16 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             onClick={() => navigate("/about")}
             sx={{
               shadow: 1,
-              width: "15%", // Ensures three avatars per line
+              width: "30%", // Ensures three avatars per line
               display: "flex",
               justifyContent: "center",
+                objectFit: "contain",
             }}
           >
-            <Avatar src="/images/logo.jpg" sx={{ width: 80, height: 60 }} />
+            <Avatar src="/images/logo-no-background.png" sx={{width: 90,
+                height: 80,
+                objectFit: "contain",
+                borderRadius: 0,}} />
           </IconButton>
         </Tooltip>
       </div>
