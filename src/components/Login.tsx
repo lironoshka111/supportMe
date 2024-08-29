@@ -32,12 +32,13 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
             sx={{
               display: "flex",
               justifyContent: "center",
-              width: "250px",
-              height: "40px",
+              width: "270px",
+              height: "45px",
               borderRadius: "10%",
-              // background: "grey",
+              color: "black",
               ":hover": {
-                background: "grey",
+                color: "white",
+                background: "grey"
               },
             }}
           >
