@@ -5,14 +5,7 @@ import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
@@ -174,8 +167,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
                 return (
                   <SidebarOption
-                    key={roomData?.roomId}
-                    id={roomData?.roomId}
+                    key={favData?.roomId}
+                    id={favData?.roomId}
                     Icon={TagIcon}
                     title={roomData?.roomTitle || "Unnamed Favorite"}
                     isChannel={true}
@@ -247,5 +240,5 @@ const SidebarOptionList = styled.div`
   flex-direction: column;
   border-bottom: 1px solid #49274b;
   gap: 2px;
-  padding: 5px 0px;
+  padding: 5px 0;
 `;

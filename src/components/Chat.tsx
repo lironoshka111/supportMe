@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   addDoc,
   collection,
@@ -28,14 +28,14 @@ const Chat: React.FC<ChatProps> = () => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { selectedRoom, setFavorite } = useRedux();
-  const [link, setLink] = useState<string>("");
   const navigate = useNavigate();
 
-  let docRef;
-
-
   const [messages] = useCollection(
-    docRef && query(collection(docRef, "messages"), orderBy("timestamp")),
+    selectedRoom &&
+      query(
+        collection(doc(collection(db, "rooms"), selectedRoom.id), "messages"),
+        orderBy("timestamp"),
+      ),
   );
 
   useEffect(() => {
@@ -48,17 +48,6 @@ const Chat: React.FC<ChatProps> = () => {
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
   }, [messages]);
-
-  const getRoomLink = async () => {
-    if (!selectedRoom) return;
-    const snap = await getDoc(doc(db, "rooms", selectedRoom?.id));
-    setLink(snap.data()?.link);
-  };
-
-  useEffect(() => {
-    getRoomLink();
-    if(selectedRoom)docRef = doc(collection(db, "rooms"), selectedRoom.id);
-  }, [selectedRoom]);
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);
@@ -119,8 +108,8 @@ const Chat: React.FC<ChatProps> = () => {
           <Tooltip title="Details" arrow>
             <IconButton
               onClick={() => {
-                if (link) {
-                  window.open(link);
+                if (selectedRoom?.linkToData) {
+                  window.open(selectedRoom.linkToData);
                 }
               }}
             >

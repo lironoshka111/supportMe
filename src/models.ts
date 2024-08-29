@@ -12,7 +12,6 @@ interface Room {
   roomTitle: string;
   location?: string;
   additionalDataLink?: string;
-  memberIds: GroupMemberType[];
   meetingUrl?: string;
   isOnline?: boolean;
   maxMembers?: number;
