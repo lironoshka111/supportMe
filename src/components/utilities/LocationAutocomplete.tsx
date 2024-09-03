@@ -5,12 +5,12 @@ import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
 
 interface LocationAutocompleteProps {
   initialValue?: string;
   onSelect: (location: NominatimSuggestion) => void;
 }
-
 export type NominatimSuggestion = {
   place_id: string;
   lat: string;
@@ -92,11 +92,30 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       return;
     }
     if (inputValue.length > 2) {
-      fetchSuggestions(inputValue).then(setSuggestions);
+      fetchSuggestions(inputValue).then((suggestions) => {
+        if (userLocation) {
+          suggestions.sort((a, b) => {
+            const distA = calculateDistance(
+              userLocation.lat,
+              userLocation.lon,
+              +a.lat,
+              +a.lon,
+            );
+            const distB = calculateDistance(
+              userLocation.lat,
+              userLocation.lon,
+              +b.lat,
+              +b.lon,
+            );
+            return distA - distB;
+          });
+        }
+        setSuggestions(suggestions);
+      });
     } else {
       setSuggestions([]);
     }
-  }, [inputValue, shouldShowSuggestions]);
+  }, [inputValue, shouldShowSuggestions, userLocation]);
 
   useEffect(() => {
     setInputValue(initialValue);
@@ -110,12 +129,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   };
 
   return (
-    <div style={{ position: "relative" }}>
+    <Box>
       <TextField
         value={inputValue}
         onChange={(e) => {
           setShouldShowSuggestions(true);
-          return setInputValue(e.target.value);
+          setInputValue(e.target.value);
         }}
         label="Enter location"
         variant="outlined"
@@ -127,15 +146,13 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           style={{
             position: "absolute",
             zIndex: 10,
-            top: "100%",
-            left: 0,
-            right: 0,
-            maxHeight: 400,
+            marginTop: 8,
+            width: "80%",
             overflowY: "auto",
           }}
         >
           <List>
-            {suggestions.slice(0, 5).map((suggestion: NominatimSuggestion) => (
+            {suggestions.slice(0, 5).map((suggestion) => (
               <React.Fragment key={suggestion.place_id}>
                 <ListItem onClick={() => onSelectItem(suggestion)}>
                   <ListItemText
@@ -158,7 +175,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           </List>
         </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 
