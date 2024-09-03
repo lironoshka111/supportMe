@@ -101,17 +101,14 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
   user-select: none;
   width: 95%;
   gap: 10px;
-
   & > svg {
     color: white;
   }
-
   p {
     font-size: 12px;
     color: white;
     font-weight: 500;
   }
-
   &:hover {
     opacity: 0.9;
     background: #722311;

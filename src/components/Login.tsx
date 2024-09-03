@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
               color: "white",
               ":hover": {
                 color: "white",
-                background: "grey"
+                background: "grey",
               },
             }}
           >
@@ -57,7 +57,6 @@ const LoginContainer = styled.div`
   align-items: center;
   justify-content: center;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
-  background-color: #c7a298;
   height: 100vh;
   background-image: url("/images/background.png");
   background-size: cover;

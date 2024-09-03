@@ -15,7 +15,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const navigate = useNavigate();
-  const [gapValue, setGapValue] = useState<number>(50);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -42,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-orange-800 overflow-hidden">
+    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
         <Tooltip title={`Menu`} arrow>
           <Avatar
@@ -63,20 +62,18 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         onClick={() => navigate("/about")}
       >
         <Tooltip title="About page" arrow>
-          <IconButton
-            onClick={() => navigate("/about")}
-            sx={{
-              shadow: 1,
-              width: "30%", // Ensures three avatars per line
-              display: "flex",
-              justifyContent: "center",
-                objectFit: "contain",
-            }}
-          >
-            <Avatar src="/images/logo-no-background.png" sx={{width: 90,
-                height: 80,
-                objectFit: "contain",
-                borderRadius: 0,}} />
+          <IconButton onClick={() => navigate("/about")}>
+            <Avatar
+              src="/images/logo-no-background.png"
+              variant="rounded"
+              sx={{
+                img: {
+                  width: "50px",
+                  height: "50px",
+                  objectFit: "contain",
+                },
+              }}
+            />
           </IconButton>
         </Tooltip>
       </div>

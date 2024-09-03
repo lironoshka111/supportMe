@@ -39,15 +39,12 @@ function App() {
           </AppBody>
         </>
       ) : (
-          <>
+        <>
           <Routes>
-              <Route
-                  path="/"
-                  element={        <Login loading={loading} />}
-              />
-              <Route path="/about" element={<AboutPage />} />
+            <Route path="/" element={<Login loading={loading} />} />
+            <Route path="/about" element={<AboutPage />} />
           </Routes>
-</>
+        </>
       )}
     </AppContainer>
   );
@@ -63,7 +60,7 @@ const AppContainer = styled.div`
 
 const AppBody = styled.div`
   display: flex;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 110px);
   background-color: #e3d0d3;
 `;
 
