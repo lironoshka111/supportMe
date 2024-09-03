@@ -145,12 +145,16 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   return (
     <Modal open={open} onClose={handleCancel}>
       <Box
+        className="rounded-lg"
         sx={{
           position: "absolute" as "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           width: 400,
+          overflowY: "auto",
+          height: "auto", // Adjust height
+          maxHeight: "80vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,

@@ -8,8 +8,9 @@ import Paper from "@mui/material/Paper";
 
 interface LocationAutocompleteProps {
   initialValue?: string;
-  onSelect: (location: NominatimSuggestion) => void; // Callback for when a location is selected
+  onSelect: (location: NominatimSuggestion) => void;
 }
+
 export type NominatimSuggestion = {
   place_id: string;
   lat: string;
@@ -47,9 +48,6 @@ export const calculateDistance = (
   return R * c; // Distance in km
 };
 
-// Function to get current location
-
-// Function to get current location
 export const getCurrentLocation = (): Promise<{ lat: number; lon: number }> => {
   return new Promise((resolve, reject) => {
     if (navigator.geolocation) {
@@ -77,16 +75,18 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   onSelect,
   initialValue = "",
 }) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [userLocation, setUserLocation] = useState<{
     lat: number;
     lon: number;
   }>();
   const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
+
   useEffect(() => {
     getCurrentLocation().then(setUserLocation);
   }, []);
+
   useEffect(() => {
     if (!shouldShowSuggestions) {
       return;
@@ -108,8 +108,9 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     setSuggestions([]);
     setShouldShowSuggestions(false);
   };
+
   return (
-    <div>
+    <div style={{ position: "relative" }}>
       <TextField
         value={inputValue}
         onChange={(e) => {
@@ -121,30 +122,39 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         fullWidth
       />
       {shouldShowSuggestions && suggestions.length > 0 && (
-        <Paper elevation={3} style={{ marginTop: 8 }}>
+        <Paper
+          elevation={3}
+          style={{
+            position: "absolute",
+            zIndex: 10,
+            top: "100%",
+            left: 0,
+            right: 0,
+            maxHeight: 400,
+            overflowY: "auto",
+          }}
+        >
           <List>
-            {suggestions
-              ?.slice(0, 5)
-              ?.map((suggestion: NominatimSuggestion) => (
-                <React.Fragment key={suggestion.place_id}>
-                  <ListItem onClick={() => onSelectItem(suggestion)}>
-                    <ListItemText
-                      primary={suggestion.display_name}
-                      secondary={
-                        userLocation
-                          ? `Distance: ${calculateDistance(
-                              userLocation?.lat ?? 0,
-                              userLocation?.lon ?? 0,
-                              +suggestion.lat,
-                              +suggestion.lon,
-                            ).toFixed(2)} km`
-                          : undefined
-                      }
-                    />
-                  </ListItem>
-                  <Divider />
-                </React.Fragment>
-              ))}
+            {suggestions.slice(0, 5).map((suggestion: NominatimSuggestion) => (
+              <React.Fragment key={suggestion.place_id}>
+                <ListItem onClick={() => onSelectItem(suggestion)}>
+                  <ListItemText
+                    primary={suggestion.display_name}
+                    secondary={
+                      userLocation
+                        ? `Distance: ${calculateDistance(
+                            userLocation.lat,
+                            userLocation.lon,
+                            +suggestion.lat,
+                            +suggestion.lon,
+                          ).toFixed(2)} km`
+                        : undefined
+                    }
+                  />
+                </ListItem>
+                <Divider />
+              </React.Fragment>
+            ))}
           </List>
         </Paper>
       )}
