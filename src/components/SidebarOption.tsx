@@ -1,7 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import styled from "@emotion/styled";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useRedux } from "../redux/reduxStateContext";
+import { Link, useNavigate } from "react-router-dom";
+import classNames from "classnames";
+import { useAppContext } from "../redux/Context";
 
 interface SidebarOptionProps {
   Icon: React.FC;
@@ -28,7 +29,12 @@ export const OptionContainer = ({
   RightIcon?: React.FC;
 }) => {
   return (
-    <div className="flex gap-1">
+    <div
+      className={classNames(
+        "hover:bg-gray-500 rounded-md",
+        selected && "bg-gray-400",
+      )}
+    >
       <SidebarOptionContainer onClick={onClick} selected={selected}>
         {Icon && <Icon />}
         <p>{title}</p>
@@ -41,28 +47,11 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   id = "is not channel",
   Icon,
   title,
-  haveAddOption = false,
   isChannel = false,
-  addChannel,
   selectChannel,
 }) => {
-  let location = useLocation();
-  const { pathname } = location;
-
-  // Extracting parameters from pathname
-  const params = pathname.split("/");
-
-  // Extracting parameter values from params array
-  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
-
-  const { selectedRoom, setSelectedRoom } = useRedux();
+  const { setSelectedRoom, selectedRoom } = useAppContext();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!selectedRoom?.id) {
-      navigate("/");
-    }
-  }, [selectedRoom?.id]);
 
   return (
     <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
@@ -74,14 +63,11 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
           if (isChannel) {
             selectChannel && selectChannel(id, title);
           } else {
-            setSelectedRoom({
-              id: "",
-              title: "",
-            });
+            setSelectedRoom(null);
             navigate("/");
           }
         }}
-        selected={roomId === id}
+        selected={selectedRoom?.id === id}
       />
     </Link>
   );
@@ -109,9 +95,4 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
     color: white;
     font-weight: 500;
   }
-  &:hover {
-    opacity: 0.9;
-    background: #b98a92;
-  }
-  background: ${(props) => (props.selected ? "#b98a92" : "none")};
 `;

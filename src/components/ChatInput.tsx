@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useRef } from "react";
+import React, { FormEvent, useRef, useState } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, doc, Timestamp } from "firebase/firestore";
 import Paper from "@mui/material/Paper";
@@ -11,14 +11,15 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import EmojiPicker from "emoji-picker-react";
 import { useClickAway } from "ahooks";
 import { Tooltip } from "@mui/material";
-import { useRedux } from "../redux/reduxStateContext";
 import { toast } from "react-toastify";
 import { analyzeMessage } from "../utils/analyzeMessage";
+import { useAppContext } from "../redux/Context";
+
 interface ChatInputProps {}
 
 const ChatInput: React.FC<ChatInputProps> = () => {
   const [user] = useAuthState(auth);
-  const { selectedRoom } = useRedux(); // Assuming currentUser is in the redux state
+  const { selectedRoom } = useAppContext(); // Assuming currentUser is in the redux state
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [messageValue, setMessageValue] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);

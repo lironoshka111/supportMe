@@ -1,5 +1,5 @@
-import React, { useState, MouseEvent } from "react";
-import { Avatar, Tooltip, Menu, MenuItem, IconButton } from "@mui/material";
+import React, { MouseEvent, useState } from "react";
+import { Avatar, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -15,7 +15,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const navigate = useNavigate();
-  const [gapValue, setGapValue] = useState<number>(50);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -27,9 +26,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    await signOut(auth);
     handleMenuClose();
+    navigate("/");
   };
 
   const handleUserSettingsOpen = () => {
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-slack-color overflow-hidden">
+    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden">
       <div className="flex items-center justify-between flex-grow">
         <Tooltip title={`Menu`} arrow>
           <Avatar
@@ -55,7 +55,6 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
       <div className="flex flex-grow justify-center items-center m-5 gap-2">
         <GeneticDiseaseSearch />
-        {/*<GapSlider value={gapValue} onChange={setGapValue} />*/}
       </div>
 
       <div
@@ -63,16 +62,18 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         onClick={() => navigate("/about")}
       >
         <Tooltip title="About page" arrow>
-          <IconButton
-            onClick={() => navigate("/about")}
-            sx={{
-              shadow: 1,
-              width: "15%", // Ensures three avatars per line
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <Avatar src="/images/logo.jpg" sx={{ width: 80, height: 60 }} />
+          <IconButton onClick={() => navigate("/about")}>
+            <Avatar
+              src="/images/logo-no-background.png"
+              variant="rounded"
+              sx={{
+                img: {
+                  width: "50px",
+                  height: "50px",
+                  objectFit: "contain",
+                },
+              }}
+            />
           </IconButton>
         </Tooltip>
       </div>
