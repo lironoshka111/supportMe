@@ -6,15 +6,23 @@ import styled from "@emotion/styled";
 import Chat from "./components/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
-import Login from "./components/Login";
+import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
 import MembersPage from "./components/MembersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CircularProgress } from "@mui/material";
 
 function App() {
   const [user, loading] = useAuthState(auth);
 
+  if (loading) {
+    return (
+      <LoginContainer>
+        <CircularProgress size={100} className="text-black" color="inherit" />
+      </LoginContainer>
+    );
+  }
   return (
     <AppContainer>
       <ToastContainer />
@@ -42,7 +50,7 @@ function App() {
       ) : (
         <>
           <Routes>
-            <Route path="/" element={<Login loading={loading} />} />
+            <Route path="/" element={<Login />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

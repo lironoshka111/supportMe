@@ -14,11 +14,11 @@ import { AlertTitle } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import { useRedux } from "../redux/reduxStateContext";
 import GroupFormModal from "./GroupFormModal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
 import { GroupMember, Room } from "../models";
+import { useAppContext } from "../redux/Context";
 
 interface SidebarProps {
   user: User;
@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
-  const { setSelectedRoom } = useRedux();
+  const { setSelectedRoom, selectedRoom } = useAppContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,6 +62,29 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
     fetchRoomDetails();
   }, [userRoomsSnapshot, loadingUserRooms]);
+  let location = useLocation();
+  const { pathname } = location;
+
+  // Extracting parameters from pathname
+  const params = pathname.split("/");
+
+  // Extracting parameter values from params array
+  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+
+  useEffect(() => {
+    if (!roomsData.size) return;
+    if (roomId && roomsData.has(roomId)) {
+      selectedRoom?.id !== roomId &&
+        setSelectedRoom({
+          id: roomId,
+          title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+          linkToData: roomsData.get(roomId)?.additionalDataLink,
+        });
+    } else {
+      navigate("/");
+      setSelectedRoom(null);
+    }
+  }, [roomId, roomsData, selectedRoom]);
 
   const selectChannel = (roomId: string) => {
     setSelectedRoom({
