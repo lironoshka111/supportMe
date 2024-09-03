@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
@@ -10,24 +10,17 @@ export interface diseaseDetails {
 
 export interface GeneticDiseaseSearchProps {
   setDiseaseDetails?: (diseaseDetails?: diseaseDetails) => void;
-  url?: string;
 }
 
 const GeneticDiseaseSearch = ({
   setDiseaseDetails,
-  url,
 }: GeneticDiseaseSearchProps) => {
-  // const [snapshot, loading, error] = useCollection(collection(db, "rooms"));
   const [options, setOptions] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [value, setValue] = useState<string | null>(null); // Initialize value state
 
   const shouldSaveTheResult = (data: string[][], text: string) =>
-    data.some((item) => {
-      if (item[0] === text) {
-        return true;
-      }
-    });
+    data.some((item) => item[0] === text);
 
   const fetchDiseases = async (query: string) => {
     if (!query) return;

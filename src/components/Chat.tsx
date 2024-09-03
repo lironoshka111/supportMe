@@ -1,14 +1,14 @@
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   addDoc,
   collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
   doc,
-  orderBy,
   getDoc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -18,16 +18,16 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../firebase";
 import Message, { MessageProps } from "./Message";
-import { useRedux } from "../redux/reduxStateContext";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../redux/Context";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
   const [user] = useAuthState(auth);
   const divRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { selectedRoom, setFavorite } = useRedux();
+  const { selectedRoom, setFavorite } = useAppContext();
   const navigate = useNavigate();
 
   const [messages] = useCollection(

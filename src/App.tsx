@@ -1,20 +1,28 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import styled from "@emotion/styled";
 import Chat from "./components/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
-import Login from "./components/Login";
+import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
 import MembersPage from "./components/MembersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CircularProgress } from "@mui/material";
 
 function App() {
   const [user, loading] = useAuthState(auth);
 
+  if (loading) {
+    return (
+      <LoginContainer>
+        <CircularProgress size={100} className="text-black" color="inherit" />
+      </LoginContainer>
+    );
+  }
   return (
     <AppContainer>
       <ToastContainer />
@@ -29,20 +37,24 @@ function App() {
                 element={
                   <HomePage>
                     <h3>Please choose or create your room</h3>
-                    <h5>
-                      Other functions may not work now, please select a room
-                    </h5>
                   </HomePage>
                 }
               />
               <Route path="/room/:roomId/members" element={<MembersPage />} />
               <Route path="/room/:roomId" element={<Chat />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AppBody>
         </>
       ) : (
-        <Login loading={loading} />
+        <>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </>
       )}
     </AppContainer>
   );
@@ -58,7 +70,7 @@ const AppContainer = styled.div`
 
 const AppBody = styled.div`
   display: flex;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 110px);
   background-color: #e3d0d3;
 `;
 

@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import {
-  Modal,
   Box,
-  Typography,
-  TextField,
   Button,
-  Switch,
   FormControlLabel,
   Link,
+  Modal,
+  Switch,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useRedux } from "../redux/reduxStateContext";
+import { useAppContext } from "../redux/Context";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -38,7 +38,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [description, setDescription] = useState("");
   const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
   const navigate = useNavigate();
-  const { setSelectedRoom } = useRedux();
+  const { setSelectedRoom } = useAppContext();
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   useEffect(() => {

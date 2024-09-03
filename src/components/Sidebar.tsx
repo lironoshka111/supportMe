@@ -5,20 +5,20 @@ import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { collection, query, where, doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "./utilities/components";
 import Alert from "@mui/material/Alert";
-import { AlertTitle, Snackbar } from "@mui/material";
+import { AlertTitle } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import { useRedux } from "../redux/reduxStateContext";
 import GroupFormModal from "./GroupFormModal";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
 import { GroupMember, Room } from "../models";
+import { useAppContext } from "../redux/Context";
 
 interface SidebarProps {
   user: User;
@@ -36,21 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
-  const [open, setOpen] = useState(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
-  const { setSelectedRoom } = useRedux();
+  const { setSelectedRoom, selectedRoom } = useAppContext();
   const navigate = useNavigate();
-
-  const handleClose = (
-    event: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") {
-      return;
-    }
-
-    setOpen(false);
-  };
 
   useEffect(() => {
     if (loadingUserRooms || !userRoomsSnapshot?.size) return;
@@ -73,8 +61,30 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     };
 
     fetchRoomDetails();
-    setOpen(true);
   }, [userRoomsSnapshot, loadingUserRooms]);
+  let location = useLocation();
+  const { pathname } = location;
+
+  // Extracting parameters from pathname
+  const params = pathname.split("/");
+
+  // Extracting parameter values from params array
+  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+
+  useEffect(() => {
+    if (!roomsData.size) return;
+    if (roomId && roomsData.has(roomId)) {
+      selectedRoom?.id !== roomId &&
+        setSelectedRoom({
+          id: roomId,
+          title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+          linkToData: roomsData.get(roomId)?.additionalDataLink,
+        });
+    } else {
+      navigate("/");
+      setSelectedRoom(null);
+    }
+  }, [roomId, roomsData, selectedRoom]);
 
   const selectChannel = (roomId: string) => {
     setSelectedRoom({
@@ -87,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   return (
     <>
-      <SidebarContainer>
+      <SidebarContainer className="bg-header-color">
         {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
@@ -179,16 +189,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               })}
         </SidebarOptionList>
       </SidebarContainer>
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          Room selected successfully!
-        </Alert>
-      </Snackbar>
       <GroupFormModal
         open={newRoomModalOpen}
         setOpen={setNewRoomModalOpen.set}
@@ -203,7 +203,6 @@ const SidebarContainer = styled.div`
   width: 260px;
   display: flex;
   flex-direction: column;
-  background: var(--slack-color);
   height: 100%;
   overflow-y: auto;
   resize: horizontal;
