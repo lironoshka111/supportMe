@@ -8,9 +8,6 @@
 }
 
 body {
-  --bar-color: rgba(211, 93, 59, 0.56);
-  --hover-option: #880d3b;
-
   margin: 0;
   font-family: -apple-system, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',

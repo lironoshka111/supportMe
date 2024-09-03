@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import styled from "@emotion/styled";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useRedux } from "../redux/reduxStateContext";
+import classNames from "classnames";
 
 interface SidebarOptionProps {
   Icon: React.FC;
@@ -28,7 +29,12 @@ export const OptionContainer = ({
   RightIcon?: React.FC;
 }) => {
   return (
-    <div className="flex gap-1">
+    <div
+      className={classNames(
+        "hover:bg-gray-500 rounded-md",
+        selected && "bg-gray-400",
+      )}
+    >
       <SidebarOptionContainer onClick={onClick} selected={selected}>
         {Icon && <Icon />}
         <p>{title}</p>
@@ -41,9 +47,7 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
   id = "is not channel",
   Icon,
   title,
-  haveAddOption = false,
   isChannel = false,
-  addChannel,
   selectChannel,
 }) => {
   let location = useLocation();
@@ -62,7 +66,7 @@ const SidebarOption: React.FC<SidebarOptionProps> = ({
     if (!selectedRoom?.id) {
       navigate("/");
     }
-  }, [selectedRoom?.id]);
+  }, [selectedRoom?.id, navigate]);
 
   return (
     <Link to={`${id === "is not channel" ? "/" : `/room/${id}`}`}>
@@ -109,10 +113,4 @@ const SidebarOptionContainer = styled.div<SidebarOptionContainerProps>`
     color: white;
     font-weight: 500;
   }
-  &:hover {
-    opacity: 0.9;
-    background: #722311;
-  }
-
-  background: ${(props) => (props.selected ? "#591814" : "none")};
 `;
