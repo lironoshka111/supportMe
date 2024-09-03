@@ -8,19 +8,21 @@ const AboutPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col w-full">
-      <Tooltip title={"go back"} arrow>
-        <IconButton
-          className="p-2.5 bg-black w-10 h-10 rounded-full"
-          aria-label="back"
-          onClick={() => navigate("/")}
-        >
-          <ArrowLeft />
-        </IconButton>
-      </Tooltip>
-      <div className="flex flex-col justify-center items-center">
-        <div className="text-3xl font-bold">About Us</div>
-        <div className="text-lg font-semibold text-start p-5">
+    <div className="flex flex-col  w-full">
+      <div className="flex justify-start mb-4">
+        <Tooltip title={"Go back"} arrow>
+          <IconButton
+            className="p-2 bg-black text-white hover:bg-gray-800 transition-colors duration-300"
+            aria-label="Back"
+            onClick={() => navigate("/")}
+          >
+            <ArrowLeft />
+          </IconButton>
+        </Tooltip>
+      </div>
+      <div className="flex flex-col items-center bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-gray-800 mb-4">About Us</h1>
+        <p className="text-lg font-medium text-gray-700 leading-relaxed">
           "SupportMe" is a dedicated community support application for the
           medical field. It provides a platform where individuals facing similar
           health challenges can connect, share experiences, and find support.
@@ -30,7 +32,7 @@ const AboutPage = () => {
           medical topics, share resources, and customize their profiles.
           Flexible notification settings allow users to stay informed without
           feeling overwhelmed.
-        </div>
+        </p>
       </div>
     </div>
   );

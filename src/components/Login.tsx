@@ -1,26 +1,31 @@
 import styled from "@emotion/styled";
-import { Button } from "@mui/material";
+import {
+  BottomNavigation,
+  Button,
+  CircularProgress,
+  Link,
+} from "@mui/material";
 import { signInWithPopup } from "firebase/auth";
-import React from "react";
+import React, { useEffect } from "react";
 import { auth, provider } from "../firebase";
-import Loader from "./utilities/Loader";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   loading: boolean;
 }
 const Login: React.FC<LoginProps> = ({ loading }) => {
+  const navigate = useNavigate();
+
   const login = () => {
     signInWithPopup(auth, provider);
   };
+
   return (
     <LoginContainer>
       {loading ? (
-        <>
-          <img src="/images/logo.jpg" alt="logo" />
-          <Loader />
-        </>
+        <CircularProgress size={100} className="text-black" color="inherit" />
       ) : (
-        <div className="flex flex-col gap-10 justify-center items-center">
+        <div className="flex flex-col gap-10 justify-center items-center flex-grow">
           <img
             src="/images/logo.jpg"
             alt="logo"
@@ -30,11 +35,9 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
             onClick={login}
             variant="contained"
             sx={{
-              display: "flex",
               justifyContent: "center",
               width: "270px",
               height: "45px",
-              borderRadius: "10%",
               color: "white",
               ":hover": {
                 color: "white",
@@ -46,6 +49,11 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
           </Button>
         </div>
       )}
+      <div className="flex w-full  items-center  text-black p-1 font-mono">
+        <Link href="about" color="inherit" fontSize={25}>
+          About
+        </Link>
+      </div>
     </LoginContainer>
   );
 };
@@ -54,6 +62,7 @@ export default Login;
 
 const LoginContainer = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);

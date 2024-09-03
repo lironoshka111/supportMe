@@ -1,5 +1,5 @@
-import React from "react";
-import { Route, Routes } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import styled from "@emotion/styled";
@@ -35,6 +35,7 @@ function App() {
               <Route path="/room/:roomId/members" element={<MembersPage />} />
               <Route path="/room/:roomId" element={<Chat />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </AppBody>
         </>
@@ -43,6 +44,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Login loading={loading} />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </>
       )}

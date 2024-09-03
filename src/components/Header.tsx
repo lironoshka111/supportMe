@@ -26,9 +26,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    await signOut(auth);
     handleMenuClose();
+    navigate("/");
   };
 
   const handleUserSettingsOpen = () => {
