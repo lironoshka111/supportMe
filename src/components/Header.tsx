@@ -1,5 +1,5 @@
-import React, { useState, MouseEvent } from "react";
-import { Avatar, Tooltip, Menu, MenuItem, IconButton } from "@mui/material";
+import React, { MouseEvent, useState } from "react";
+import { Avatar, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -55,7 +55,6 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
       <div className="flex flex-grow justify-center items-center m-5 gap-2">
         <GeneticDiseaseSearch />
-        {/*<GapSlider value={gapValue} onChange={setGapValue} />*/}
       </div>
 
       <div

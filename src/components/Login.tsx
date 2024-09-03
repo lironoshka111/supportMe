@@ -1,21 +1,14 @@
 import styled from "@emotion/styled";
-import {
-  BottomNavigation,
-  Button,
-  CircularProgress,
-  Link,
-} from "@mui/material";
+import { Button, CircularProgress, Link } from "@mui/material";
 import { signInWithPopup } from "firebase/auth";
-import React, { useEffect } from "react";
+import React from "react";
 import { auth, provider } from "../firebase";
-import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   loading: boolean;
 }
-const Login: React.FC<LoginProps> = ({ loading }) => {
-  const navigate = useNavigate();
 
+const Login: React.FC<LoginProps> = ({ loading }) => {
   const login = () => {
     signInWithPopup(auth, provider);
   };
@@ -50,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ loading }) => {
         </div>
       )}
       <div className="flex w-full  items-center  text-black p-1 font-mono">
-        <Link href="about" color="inherit" fontSize={25}>
+        <Link href={"about"} color="inherit" fontSize={25}>
           About
         </Link>
       </div>
