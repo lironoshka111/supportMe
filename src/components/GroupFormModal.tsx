@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useAppContext } from "../redux/Context";
+import LocationAutocomplete, {
+  NominatimSuggestion,
+} from "./utilities/LocationAutocomplete";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -32,7 +35,7 @@ interface ValidationErrors {
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [user] = useAuthState(auth);
   const [maxParticipants, setMaxParticipants] = useState(1);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState<NominatimSuggestion>();
   const [isOnline, setIsOnline] = useState(true);
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -66,7 +69,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
 
   const resetForm = () => {
     setMaxParticipants(1);
-    setLocation("");
+    setLocation(undefined);
     setIsOnline(true);
     setContactNumber("");
     setDescription("");
@@ -193,16 +196,22 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
 
         {!isOnline && (
           <div className="flex flex-col">
-            <TextField
-              fullWidth
-              label="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              margin="normal"
-              disabled={isOnline}
-              error={!!errors.location}
-              helperText={errors.location}
+            <LocationAutocomplete
+              onSelect={(location) => {
+                setLocation(location);
+                console.log(location);
+              }}
             />
+            {/*<TextField*/}
+            {/*  fullWidth*/}
+            {/*  label="Location"*/}
+            {/*  value={location}*/}
+            {/*  onChange={(e) => setLocation(e.target.value)}*/}
+            {/*  margin="normal"*/}
+            {/*  disabled={isOnline}*/}
+            {/*  error={!!errors.location}*/}
+            {/*  helperText={errors.location}*/}
+            {/*/>*/}
             <TextField
               fullWidth
               label="Contact Number"
