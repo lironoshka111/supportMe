@@ -6,10 +6,15 @@ interface User {
   userProfilePicUrl?: string;
 }
 
+export interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
 // Rooms Collection
 interface Room {
   roomTitle: string;
-  location?: string;
+  location?: Coordinates;
   additionalDataLink?: string;
   meetingUrl?: string;
   isOnline?: boolean;
