@@ -1,5 +1,5 @@
 import React, { FormEvent, useRef, useState } from "react";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../firebase";
 import { addDoc, collection, doc, Timestamp } from "firebase/firestore";
 import Paper from "@mui/material/Paper";
 import TagFacesIcon from "@mui/icons-material/TagFaces";
@@ -12,8 +12,8 @@ import EmojiPicker from "emoji-picker-react";
 import { useClickAway } from "ahooks";
 import { Tooltip } from "@mui/material";
 import { toast } from "react-toastify";
-import { analyzeMessage } from "../utils/analyzeMessage";
-import { useAppContext } from "../redux/Context";
+import { analyzeMessage } from "../../utils/analyzeMessage";
+import { useAppContext } from "../../redux/Context";
 
 interface ChatInputProps {}
 

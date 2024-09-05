@@ -16,11 +16,11 @@ import PeopleIcon from "@mui/icons-material/People";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../firebase";
 import Message, { MessageProps } from "./Message";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { useAppContext } from "../redux/Context";
+import { useAppContext } from "../../redux/Context";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {

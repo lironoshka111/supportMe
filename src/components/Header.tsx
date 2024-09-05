@@ -5,9 +5,9 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
-import GeneticDiseaseSearch from "./GeneticDiseaseSearch";
+import GeneticDiseaseSearch from "./utilities/GeneticDiseaseSearch";
 import { useNavigate } from "react-router-dom";
-import UserSettings from "./UserSettings";
+import UserSettings from "./Modals/UserSettingsModal";
 
 interface HeaderProps {
   user: User;

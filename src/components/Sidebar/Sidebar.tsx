@@ -6,21 +6,21 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { AlertWrapper } from "./utilities/components";
+import { AlertWrapper } from "../utilities/components";
 import Alert from "@mui/material/Alert";
-import {AlertTitle, Snackbar} from "@mui/material";
+import { AlertTitle, Snackbar } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import GroupFormModal from "./GroupFormModal";
+import GroupFormModal from "../Modals/GroupFormModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
-import { GroupMember, Room } from "../models";
-import { useAppContext } from "../redux/Context";
+import { GroupMember, Room } from "../../models";
+import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
-import { GroupSearchModal } from "./SearchGroups";
+import { GroupSearchModal } from "../Modals";
 
 interface SidebarProps {
   user: User;

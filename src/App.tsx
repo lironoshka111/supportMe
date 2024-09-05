@@ -1,14 +1,14 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/Sidebar/Sidebar";
 import styled from "@emotion/styled";
-import Chat from "./components/Chat";
+import Chat from "./components/ChatScreen/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
-import MembersPage from "./components/MembersPage";
+import MembersPage from "./components/ChatScreen/MembersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress } from "@mui/material";

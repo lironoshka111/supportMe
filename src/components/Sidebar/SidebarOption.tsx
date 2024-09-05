@@ -2,7 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import { Link, useNavigate } from "react-router-dom";
 import classNames from "classnames";
-import { useAppContext } from "../redux/Context";
+import { useAppContext } from "../../redux/Context";
 
 interface SidebarOptionProps {
   Icon: React.FC;

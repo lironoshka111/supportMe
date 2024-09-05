@@ -10,14 +10,16 @@ import {
   Typography,
 } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
+import GeneticDiseaseSearch, {
+  diseaseDetails,
+} from "../utilities/GeneticDiseaseSearch";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useAppContext } from "../redux/Context";
+import { useAppContext } from "../../redux/Context";
 import LocationAutocomplete, {
   NominatimSuggestion,
-} from "./utilities/LocationAutocomplete";
+} from "../utilities/LocationAutocomplete";
 
 interface GroupFormModalProps {
   open: boolean;
