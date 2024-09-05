@@ -10,11 +10,16 @@ import {
   Typography,
 } from "@mui/material";
 import { addDoc, collection } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "../../firebase";
 import { useNavigate } from "react-router-dom";
-import GeneticDiseaseSearch, { diseaseDetails } from "./GeneticDiseaseSearch";
+import GeneticDiseaseSearch, {
+  diseaseDetails,
+} from "../utilities/GeneticDiseaseSearch";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useAppContext } from "../redux/Context";
+import { useAppContext } from "../../redux/Context";
+import LocationAutocomplete, {
+  NominatimSuggestion,
+} from "../utilities/LocationAutocomplete";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -32,7 +37,7 @@ interface ValidationErrors {
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [user] = useAuthState(auth);
   const [maxParticipants, setMaxParticipants] = useState(1);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState<NominatimSuggestion>();
   const [isOnline, setIsOnline] = useState(true);
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
@@ -66,7 +71,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
 
   const resetForm = () => {
     setMaxParticipants(1);
-    setLocation("");
+    setLocation(undefined);
     setIsOnline(true);
     setContactNumber("");
     setDescription("");
@@ -99,10 +104,6 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
     if (!isOnline && !location) {
       errors.location = "Location is required for offline events.";
     }
-
-    // if (!contactNumber) {
-    //   errors.contactNumber = "Contact number is required.";
-    // }
 
     return errors;
   };
@@ -142,12 +143,16 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   return (
     <Modal open={open} onClose={handleCancel}>
       <Box
+        className="rounded-lg"
         sx={{
           position: "absolute" as "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: "calc(100% - 32px)",
+          overflowY: "auto",
+          height: "auto", // Adjust height
+          maxHeight: "80vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
@@ -193,15 +198,11 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
 
         {!isOnline && (
           <div className="flex flex-col">
-            <TextField
-              fullWidth
-              label="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              margin="normal"
-              disabled={isOnline}
-              error={!!errors.location}
-              helperText={errors.location}
+            <LocationAutocomplete
+              onSelect={(location) => {
+                setLocation(location);
+              }}
+              error={errors.location}
             />
             <TextField
               fullWidth

@@ -6,19 +6,21 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { AlertWrapper } from "./utilities/components";
+import { AlertWrapper } from "../utilities/components";
 import Alert from "@mui/material/Alert";
-import { AlertTitle } from "@mui/material";
+import { AlertTitle, Snackbar } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import GroupFormModal from "./GroupFormModal";
+import GroupFormModal from "../Modals/GroupFormModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
-import { GroupMember, Room } from "../models";
-import { useAppContext } from "../redux/Context";
+import { GroupMember, Room } from "../../types/models";
+import { useAppContext } from "../../redux/Context";
+import { AddCircle } from "@mui/icons-material";
+import { GroupSearchModal } from "../Modals";
 
 interface SidebarProps {
   user: User;
@@ -36,9 +38,22 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
+  const [groupSearchModalOpen, setGroupSearchModalOpen] = useBoolean(false);
+  const [open, setOpen] = useState(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
   const { setSelectedRoom, selectedRoom } = useAppContext();
   const navigate = useNavigate();
+
+  const handleClose = (
+    event: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (loadingUserRooms || !userRoomsSnapshot?.size) return;
@@ -97,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   return (
     <>
-      <SidebarContainer className="bg-header-color">
+      <SidebarContainer className="bg-sidebar-color">
         {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
@@ -130,6 +145,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             </p>
           </SidebarInfo>
         </SidebarTop>
+
+        <SidebarOptionList>
+          <OptionContainer
+            Icon={AddCircle}
+            title={"Join To Group"}
+            onClick={setGroupSearchModalOpen.setTrue}
+          />
+        </SidebarOptionList>
 
         <SidebarOptionList>
           <OptionContainer
@@ -189,10 +212,28 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               })}
         </SidebarOptionList>
       </SidebarContainer>
-      <GroupFormModal
-        open={newRoomModalOpen}
-        setOpen={setNewRoomModalOpen.set}
-      />
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert
+          onClose={handleClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Room selected successfully!
+        </Alert>
+      </Snackbar>
+      {newRoomModalOpen && (
+        <GroupFormModal
+          open={newRoomModalOpen}
+          setOpen={setNewRoomModalOpen.set}
+        />
+      )}
+      {groupSearchModalOpen && (
+        <GroupSearchModal
+          open={groupSearchModalOpen}
+          setOpen={setGroupSearchModalOpen.set}
+        />
+      )}
     </>
   );
 };

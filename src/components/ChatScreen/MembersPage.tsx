@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import { Avatar, Button, Tooltip } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ArrowLeft, LocalPolice } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
-import SendIcon from "@mui/icons-material/Send";
 import { useNavigate } from "react-router-dom";
+
 const MembersPage = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);

@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { Avatar } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import { useHover } from "ahooks";
 import { ReactionBarSelector } from "@charkour/react-reactions";
 import { jsx } from "@emotion/react";

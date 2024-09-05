@@ -1,19 +1,20 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/Sidebar/Sidebar";
 import styled from "@emotion/styled";
-import Chat from "./components/Chat";
+import Chat from "./components/ChatScreen/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
-import MembersPage from "./components/MembersPage";
+import MembersPage from "./components/ChatScreen/MembersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, useMediaQuery } from "@mui/material";
 
 function App() {
+  const isMobile = useMediaQuery("(max-width:600px)");
   const [user, loading] = useAuthState(auth);
 
   if (loading) {
@@ -23,6 +24,7 @@ function App() {
       </LoginContainer>
     );
   }
+
   return (
     <AppContainer>
       <ToastContainer />
@@ -30,21 +32,17 @@ function App() {
         <>
           <Header user={user} />
           <AppBody>
-            <Sidebar user={user} />
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <HomePage>
-                    <h3>Please choose or create your room</h3>
-                  </HomePage>
-                }
-              />
-              <Route path="/room/:roomId/members" element={<MembersPage />} />
-              <Route path="/room/:roomId" element={<Chat />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+            {/* Sidebar will always be shown when user is logged in */}
+            {!isMobile && <Sidebar user={user} />}
+            <MainContent>
+              <Routes>
+                <Route path="/" element={<AboutPage />} />
+                <Route path="/room/:roomId/members" element={<MembersPage />} />
+                <Route path="/room/:roomId" element={<Chat />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </MainContent>
           </AppBody>
         </>
       ) : (
@@ -70,26 +68,25 @@ const AppContainer = styled.div`
 
 const AppBody = styled.div`
   display: flex;
-  height: calc(100vh - 110px);
+  height: calc(100vh - 64px); /* Adjusted height to leave room for the header */
   background-color: #e3d0d3;
 `;
 
+const MainContent = styled.div`
+  flex-grow: 1;
+  //background-color: #ffffff;
+  padding: 20px;
+  overflow-y: auto;
+`;
+
 const HomePage = styled.div`
-  flex: 0.8;
   display: flex;
-  flex-direction: column;
-  align-items: center;
   justify-content: center;
-  h4 {
-    font-size: 64px;
-    font-weight: 500;
-  }
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
   h3 {
     font-size: 24px;
-    font-weight: 500;
-  }
-  h5 {
-    font-size: 18px;
     font-weight: 500;
   }
 `;

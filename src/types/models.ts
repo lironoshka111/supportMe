@@ -1,4 +1,6 @@
 // Users Collection
+import { NominatimSuggestion } from "./types";
+
 interface User {
   userId: string;
   userName: string;
@@ -8,9 +10,8 @@ interface User {
 
 // Rooms Collection
 interface Room {
-  roomId: string;
   roomTitle: string;
-  location?: string;
+  location?: NominatimSuggestion;
   additionalDataLink?: string;
   meetingUrl?: string;
   isOnline?: boolean;
@@ -49,7 +50,6 @@ interface Reaction {
 
 // GroupMembers Collection
 interface GroupMember {
-  groupMemberId: string;
   userId: string;
   roomId: string;
   isFavorite?: boolean;

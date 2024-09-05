@@ -3,8 +3,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        "slack-color": "#ce9aa3",
         "header-color": "#c4999e",
+        "sidebar-color": "#c4999e",
       },
       spacing: {
         2.5: "10px",

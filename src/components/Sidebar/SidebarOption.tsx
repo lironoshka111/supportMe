@@ -2,7 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import { Link, useNavigate } from "react-router-dom";
 import classNames from "classnames";
-import { useAppContext } from "../redux/Context";
+import { useAppContext } from "../../redux/Context";
 
 interface SidebarOptionProps {
   Icon: React.FC;
@@ -32,7 +32,7 @@ export const OptionContainer = ({
     <div
       className={classNames(
         "hover:bg-gray-500 rounded-md",
-        selected && "bg-gray-400",
+        selected && "bg-gray-600",
       )}
     >
       <SidebarOptionContainer onClick={onClick} selected={selected}>
