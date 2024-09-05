@@ -32,7 +32,7 @@ export const OptionContainer = ({
     <div
       className={classNames(
         "hover:bg-gray-500 rounded-md",
-        selected && "bg-gray-400",
+        selected && "bg-gray-600",
       )}
     >
       <SidebarOptionContainer onClick={onClick} selected={selected}>
