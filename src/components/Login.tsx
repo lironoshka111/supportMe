@@ -34,9 +34,9 @@ const Login = () => {
           Login with google
         </Button>
       </div>
-      <div className="flex w-full  items-center  text-black p-1 font-mono">
-        <Link href={"about"} color="inherit" fontSize={25}>
-          About
+      <div className="flex w-full  items-center  text-black p-1 bg-white bg-opacity-25 font-bold ">
+        <Link href={"about"} color="inherit" fontSize={15}>
+          About Us
         </Link>
       </div>
     </LoginContainer>
@@ -53,7 +53,8 @@ export const LoginContainer = styled.div`
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
   height: 100vh;
   background-image: url("/images/background.png");
-  background-size: cover;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 
   button {
     background-color: rgba(56, 37, 36, 0.82);

@@ -58,7 +58,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
   };
 
   return (
-    <div className="flex w-[calc(100%-40px)] p-5" ref={containerRef}>
+    <div className="flex w-full p-3" ref={containerRef}>
       <Paper
         onSubmit={addMessage}
         component="form"
