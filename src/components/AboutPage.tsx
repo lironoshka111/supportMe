@@ -3,23 +3,28 @@ import IconButton from "@mui/material/IconButton";
 import { ArrowLeft } from "@mui/icons-material";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase";
 
 const AboutPage = () => {
   const navigate = useNavigate();
+  const [user] = useAuthState(auth);
 
   return (
     <div className="flex flex-col  w-full">
-      <div className="flex justify-start mb-4">
-        <Tooltip title={"Go back"} arrow>
-          <IconButton
-            className="p-2 bg-black text-white hover:bg-gray-800 transition-colors duration-300"
-            aria-label="Back"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft />
-          </IconButton>
-        </Tooltip>
-      </div>
+      {!user && (
+        <div className="flex justify-start mb-4">
+          <Tooltip title={"Go back"} arrow>
+            <IconButton
+              className="p-2 bg-black text-white hover:bg-gray-800 transition-colors duration-300"
+              aria-label="Back"
+              onClick={() => navigate("/")}
+            >
+              <ArrowLeft />
+            </IconButton>
+          </Tooltip>
+        </div>
+      )}
       <div className="flex flex-col items-center bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-4">About Us</h1>
         <p className="text-lg font-medium text-gray-700 leading-relaxed">

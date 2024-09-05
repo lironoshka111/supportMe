@@ -36,14 +36,7 @@ function App() {
             {!isMobile && <Sidebar user={user} />}
             <MainContent>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <HomePage>
-                      <h3>Please choose or create your room</h3>
-                    </HomePage>
-                  }
-                />
+                <Route path="/" element={<AboutPage />} />
                 <Route path="/room/:roomId/members" element={<MembersPage />} />
                 <Route path="/room/:roomId" element={<Chat />} />
                 <Route path="/about" element={<AboutPage />} />

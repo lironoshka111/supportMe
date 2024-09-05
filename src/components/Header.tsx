@@ -78,12 +78,9 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         <GeneticDiseaseSearch />
       </div>
 
-      <div
-        className="flex justify-end flex-grow"
-        onClick={() => navigate("/about")}
-      >
+      <div className="flex justify-end flex-grow" onClick={() => navigate("/")}>
         <Tooltip title="About page" arrow>
-          <IconButton onClick={() => navigate("/about")}>
+          <IconButton onClick={() => navigate("/")}>
             <Avatar
               src="/images/logo-no-background.png"
               variant="rounded"
