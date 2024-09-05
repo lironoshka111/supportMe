@@ -17,7 +17,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import GroupFormModal from "../Modals/GroupFormModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
-import { GroupMember, Room } from "../../models";
+import { GroupMember, Room } from "../../types/models";
 import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";

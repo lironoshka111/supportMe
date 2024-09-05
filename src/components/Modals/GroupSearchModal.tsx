@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
+  Autocomplete,
   Button,
   Card,
   CardContent,
-  Typography,
-  IconButton,
   Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
-  Autocomplete,
+  IconButton,
+  TextField,
+  Typography,
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase";
-import { GroupMember, Room } from "../../models";
+import { GroupMember, Room } from "../../types/models";
 import { useAuthState } from "react-firebase-hooks/auth";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from "react-toastify";
+
 type RoomWithId = Room & { id: string };
 interface GroupSearchModalProps {
   open: boolean;
