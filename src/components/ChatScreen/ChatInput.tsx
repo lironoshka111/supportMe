@@ -10,7 +10,7 @@ import SendIcon from "@mui/icons-material/Send";
 import { useAuthState } from "react-firebase-hooks/auth";
 import EmojiPicker from "emoji-picker-react";
 import { useClickAway } from "ahooks";
-import { Tooltip } from "@mui/material";
+import { Tooltip, useMediaQuery } from "@mui/material";
 import { toast } from "react-toastify";
 import { analyzeMessage } from "../../utils/analyzeMessage";
 import { useAppContext } from "../../redux/Context";
@@ -24,6 +24,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
   const [messageValue, setMessageValue] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
 
+  const isMobile = useMediaQuery("(max-width:600px)");
   useClickAway(() => {
     setShowEmojiPicker(false);
   }, containerRef);
@@ -33,7 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey && !isMobile) {
       addMessage();
     }
   };
@@ -58,11 +59,11 @@ const ChatInput: React.FC<ChatInputProps> = () => {
   };
 
   return (
-    <div className="flex w-full p-3" ref={containerRef}>
+    <div className="flex w-full" ref={containerRef}>
       <Paper
         onSubmit={addMessage}
         component="form"
-        className="p-2.5 flex items-center w-full"
+        className="flex items-center w-full"
       >
         {showEmojiPicker && (
           <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>
@@ -77,7 +78,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
           <TagFacesIcon />
         </IconButton>
         <InputBase
-          className="ml-2.5 flex-1"
+          className="flex-1"
           type="text"
           placeholder={`Message to #${selectedRoom?.title ?? ""}`}
           value={messageValue}
