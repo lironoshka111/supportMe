@@ -1,13 +1,22 @@
 import React, { MouseEvent, useState } from "react";
-import { Avatar, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
-
+import {
+  Avatar,
+  Drawer,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  useMediaQuery,
+} from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
+import MenuIcon from "@mui/icons-material/Menu";
 import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
 import GeneticDiseaseSearch from "./utilities/GeneticDiseaseSearch";
 import { useNavigate } from "react-router-dom";
 import UserSettings from "./Modals/UserSettingsModal";
+import Sidebar from "./Sidebar/Sidebar";
 
 interface HeaderProps {
   user: User;
@@ -17,6 +26,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Drawer state
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   const handleMenuOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -41,8 +52,18 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     setIsSettingsModalOpen(false);
   };
 
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
   return (
     <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden">
+      {isMobile && (
+        <IconButton onClick={toggleDrawer}>
+          <MenuIcon />
+        </IconButton>
+      )}
+
       <div className="flex items-center justify-between flex-grow">
         <Tooltip title={`Menu`} arrow>
           <Avatar
@@ -98,6 +119,21 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         onClose={handleUserSettingsClose}
         user={user}
       />
+
+      {isMobile && (
+        <Drawer
+          anchor="left"
+          open={isDrawerOpen}
+          onClose={toggleDrawer}
+          ModalProps={{
+            keepMounted: true, // Better performance on mobile
+          }}
+        >
+          <div className="bg-sidebar-color w-60 h-full">
+            <Sidebar user={user} />
+          </div>
+        </Drawer>
+      )}
     </div>
   );
 };

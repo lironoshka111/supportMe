@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   return (
     <>
-      <SidebarContainer className="bg-header-color">
+      <SidebarContainer className="bg-sidebar-color">
         {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
