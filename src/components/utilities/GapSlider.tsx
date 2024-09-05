@@ -1,30 +1,38 @@
 // src/GapSlider.tsx
-import { Slider, Typography } from "@mui/material";
+import { Slider } from "@mui/material";
 import React from "react";
 
 interface GapSliderProps {
   value: number;
   onChange: (newValue: number) => void;
+  step?: number;
+  min?: number;
+  max?: number;
 }
 
-const GapSlider: React.FC<GapSliderProps> = ({ value, onChange }) => {
+const GapSlider: React.FC<GapSliderProps> = ({
+  value,
+  onChange,
+  step,
+  min,
+  max,
+}) => {
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     onChange(newValue as number);
   };
 
   return (
-    <div className="w-full mt-4 pr-4">
+    <div className="w-full">
       <Slider
         value={value}
         onChange={handleSliderChange}
         aria-labelledby="gap-slider"
-        valueLabelDisplay="auto"
-        step={1}
+        valueLabelDisplay="on"
+        step={step ?? 1}
         marks
-        min={1}
-        max={200}
+        min={min ?? 1}
+        max={max ?? 200}
       />
-      <Typography>Selected Gap: {value} km</Typography>
     </div>
   );
 };

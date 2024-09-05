@@ -6,11 +6,14 @@ import ListItemText from "@mui/material/ListItemText";
 import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
+import { Coordinates } from "../../types/types";
 
 interface LocationAutocompleteProps {
   initialValue?: string;
   onSelect: (location: NominatimSuggestion) => void;
+  error?: string;
 }
+
 export type NominatimSuggestion = {
   place_id: string;
   lat: string;
@@ -74,13 +77,11 @@ export const getCurrentLocation = (): Promise<{ lat: number; lon: number }> => {
 const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   onSelect,
   initialValue = "",
+  error,
 }) => {
   const [suggestions, setSuggestions] = useState<NominatimSuggestion[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lon: number;
-  }>();
+  const [userLocation, setUserLocation] = useState<Coordinates>();
   const [shouldShowSuggestions, setShouldShowSuggestions] = useState(false);
 
   useEffect(() => {
@@ -139,6 +140,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         label="Enter location"
         variant="outlined"
         fullWidth
+        error={!!error}
+        helperText={error}
       />
       {shouldShowSuggestions && suggestions.length > 0 && (
         <Paper

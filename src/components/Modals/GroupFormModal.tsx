@@ -105,10 +105,6 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
       errors.location = "Location is required for offline events.";
     }
 
-    // if (!contactNumber) {
-    //   errors.contactNumber = "Contact number is required.";
-    // }
-
     return errors;
   };
 
@@ -153,7 +149,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
+          width: "calc(100% - 32px)",
           overflowY: "auto",
           height: "auto", // Adjust height
           maxHeight: "80vh", // Ensure it doesn't exceed viewport height
@@ -205,19 +201,9 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
             <LocationAutocomplete
               onSelect={(location) => {
                 setLocation(location);
-                console.log(location);
               }}
+              error={errors.location}
             />
-            {/*<TextField*/}
-            {/*  fullWidth*/}
-            {/*  label="Location"*/}
-            {/*  value={location}*/}
-            {/*  onChange={(e) => setLocation(e.target.value)}*/}
-            {/*  margin="normal"*/}
-            {/*  disabled={isOnline}*/}
-            {/*  error={!!errors.location}*/}
-            {/*  helperText={errors.location}*/}
-            {/*/>*/}
             <TextField
               fullWidth
               label="Contact Number"

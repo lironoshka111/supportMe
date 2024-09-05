@@ -1,4 +1,6 @@
 // Users Collection
+import { NominatimSuggestion } from "./types";
+
 interface User {
   userId: string;
   userName: string;
@@ -6,15 +8,10 @@ interface User {
   userProfilePicUrl?: string;
 }
 
-export interface Coordinates {
-  lat: number;
-  lon: number;
-}
-
 // Rooms Collection
 interface Room {
   roomTitle: string;
-  location?: Coordinates;
+  location?: NominatimSuggestion;
   additionalDataLink?: string;
   meetingUrl?: string;
   isOnline?: boolean;

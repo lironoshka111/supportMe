@@ -10,6 +10,8 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  InputLabel,
+  Slider,
   TextField,
   Typography,
 } from "@mui/material";
@@ -30,11 +32,11 @@ interface GroupSearchModalProps {
 
 const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [locationFilter, setLocationFilter] = useState<string>("");
-  const [isOnlineFilter, setIsOnlineFilter] = useState<boolean>(false);
+  const [isOnlineFilter, setIsOnlineFilter] = useState<boolean>(true);
   const [results, setResults] = useState<RoomWithId[]>([] as RoomWithId[]);
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>([]);
   const [user] = useAuthState(auth);
+  const [locationRange, setLocationRange] = useState<number>(0);
 
   useEffect(() => {
     if (title) {
@@ -68,8 +70,8 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
       where("roomTitle", "<=", searchTerm + "\uf8ff"),
     ];
 
-    if (locationFilter) {
-      constraints.push(where("location", "==", locationFilter));
+    if (locationRange) {
+      // constraints.push(where("location", "==", locationFilter));
     }
 
     if (isOnlineFilter) {
@@ -129,7 +131,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
               <TextField
                 {...params}
                 label="Search by Title"
-                style={{ marginTop: "20px" }}
                 InputProps={{
                   ...params.InputProps,
                   endAdornment: (
@@ -141,13 +142,7 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
               />
             )}
           />
-          <TextField
-            fullWidth
-            label="Filter by Location"
-            value={locationFilter}
-            onChange={(e) => setLocationFilter(e.target.value)}
-            style={{ marginTop: "20px" }}
-          />
+
           <FormControlLabel
             control={
               <Checkbox
@@ -155,16 +150,33 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
                 onChange={(e) => setIsOnlineFilter(e.target.checked)}
               />
             }
-            label="Online Only"
+            label={<InputLabel>Online</InputLabel>}
             style={{ marginTop: "10px" }}
           />
+          {!isOnlineFilter && (
+            <div className="flex w-full gap-1 mt-4">
+              <InputLabel>Location</InputLabel>
+              <div className="flex flex-grow">
+                <Slider
+                  value={locationRange}
+                  onChange={(event, value) => setLocationRange(value as number)}
+                  aria-labelledby="gap-slider"
+                  valueLabelDisplay="on"
+                  step={5}
+                  marks
+                  min={0}
+                  max={200}
+                />
+              </div>
+            </div>
+          )}
           <div style={{ marginTop: "20px" }}>
             {results?.map((room) => (
               <Card key={room.roomTitle} style={{ marginBottom: "10px" }}>
                 <CardContent>
                   <Typography variant="h6">{room.roomTitle}</Typography>
                   <Typography>{room.description}</Typography>
-                  <Typography>{room.location}</Typography>
+                  <Typography>{room.location?.display_name}</Typography>
                   <Button
                     variant="contained"
                     onClick={() => joinGroup(room.id)}

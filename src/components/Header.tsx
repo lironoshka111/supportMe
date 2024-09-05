@@ -126,7 +126,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             keepMounted: true, // Better performance on mobile
           }}
         >
-          <div className="bg-sidebar-color w-60 h-full">
+          <div className="bg-sidebar-color h-full">
             <Sidebar user={user} />
           </div>
         </Drawer>
