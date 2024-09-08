@@ -1,6 +1,6 @@
-import React, { FormEvent, useRef, useState } from "react";
+import React, { FormEvent, useRef, useState, useEffect } from "react";
 import { auth, db } from "../../firebase";
-import { addDoc, collection, doc, Timestamp } from "firebase/firestore";
+import { addDoc, collection, doc, Timestamp, setDoc } from "firebase/firestore";
 import Paper from "@mui/material/Paper";
 import TagFacesIcon from "@mui/icons-material/TagFaces";
 import IconButton from "@mui/material/IconButton";
@@ -19,10 +19,11 @@ interface ChatInputProps {}
 
 const ChatInput: React.FC<ChatInputProps> = () => {
   const [user] = useAuthState(auth);
-  const { selectedRoom } = useAppContext(); // Assuming currentUser is in the redux state
+  const { selectedRoom } = useAppContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [messageValue, setMessageValue] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const divRef = useRef<HTMLDivElement | null>(null); // For auto-scrolling
 
   const isMobile = useMediaQuery("(max-width:600px)");
   useClickAway(() => {
@@ -31,6 +32,18 @@ const ChatInput: React.FC<ChatInputProps> = () => {
 
   const onEmojiClick = (event: any) => {
     setMessageValue((prevInput) => prevInput + event.emoji);
+  };
+
+  // Function to update the user's last seen message in Firestore
+  const updateLastSeen = async () => {
+    if (selectedRoom && user) {
+      const lastSeenRef = doc(db, "lastSeen", `${selectedRoom.id}_${user.uid}`);
+      await setDoc(lastSeenRef, {
+        userId: user.uid,
+        roomId: selectedRoom.id,
+        lastSeen: Timestamp.now(),
+      }, { merge: true });
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -54,53 +67,66 @@ const ChatInput: React.FC<ChatInputProps> = () => {
         timestamp: Timestamp.now(),
         userId: user?.uid,
       });
+      setMessageValue(""); // Clear the input field
+
+      // After sending the message, scroll to the latest message and update last seen
+      divRef.current?.scrollIntoView({ behavior: "smooth" });
+      updateLastSeen(); // Update the last seen timestamp in Firestore
     }
-    setMessageValue("");
   };
 
+
+
+
+  useEffect(() => {
+    // Automatically scroll to the latest message whenever the messages change
+    divRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedRoom, user]);
+
   return (
-    <div className="flex w-full" ref={containerRef}>
-      <Paper
-        onSubmit={addMessage}
-        component="form"
-        className="flex items-center w-full"
-      >
-        {showEmojiPicker && (
-          <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>
-            <EmojiPicker onEmojiClick={onEmojiClick} />
-          </div>
-        )}
-        <IconButton
-          className="p-2.5"
-          aria-label="menu"
-          onClick={() => setShowEmojiPicker((val) => !val)}
+      <div className="flex w-full" ref={containerRef}>
+        <Paper
+            onSubmit={addMessage}
+            component="form"
+            className="flex items-center w-full"
         >
-          <TagFacesIcon />
-        </IconButton>
-        <InputBase
-          className="flex-1"
-          type="text"
-          placeholder={`Message to #${selectedRoom?.title ?? ""}`}
-          value={messageValue}
-          onChange={(e) => setMessageValue(e.target.value)}
-          inputProps={{ "aria-label": "message input" }}
-          autoFocus
-          multiline
-          onKeyDown={handleKeyDown} // Handle Enter key press
-        />
-        <Divider className="h-7 mx-0.5" orientation="vertical" />
-        <Tooltip title={"Send"} arrow>
+          {showEmojiPicker && (
+              <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>
+                <EmojiPicker onEmojiClick={onEmojiClick} />
+              </div>
+          )}
           <IconButton
-            color="primary"
-            className="p-2.5"
-            aria-label="send"
-            type="submit"
+              className="p-2.5"
+              aria-label="menu"
+              onClick={() => setShowEmojiPicker((val) => !val)}
           >
-            <SendIcon />
+            <TagFacesIcon />
           </IconButton>
-        </Tooltip>
-      </Paper>
-    </div>
+          <InputBase
+              className="flex-1"
+              type="text"
+              placeholder={`Message to #${selectedRoom?.title ?? ""}`}
+              value={messageValue}
+              onChange={(e) => setMessageValue(e.target.value)}
+              inputProps={{ "aria-label": "message input" }}
+              autoFocus
+              multiline
+              onKeyDown={handleKeyDown} // Handle Enter key press
+          />
+          <Divider className="h-7 mx-0.5" orientation="vertical" />
+          <Tooltip title={"Send"} arrow>
+            <IconButton
+                color="primary"
+                className="p-2.5"
+                aria-label="send"
+                type="submit"
+            >
+              <SendIcon />
+            </IconButton>
+          </Tooltip>
+        </Paper>
+        <div ref={divRef} /> {/* Div for auto-scrolling */}
+      </div>
   );
 };
 

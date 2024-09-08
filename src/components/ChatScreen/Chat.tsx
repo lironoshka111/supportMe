@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   addDoc,
   collection,
@@ -7,6 +7,8 @@ import {
   getDocs,
   orderBy,
   query,
+  setDoc,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -29,33 +31,69 @@ const Chat: React.FC<ChatProps> = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { selectedRoom, setFavorite } = useAppContext();
   const navigate = useNavigate();
+  const [lastSeenMessage, setLastSeenMessage] = useState<Timestamp | null>(null);
+
+  // Fetch the last seen message for the current user in the selected room
+  const fetchLastSeenMessage = async () => {
+    if (selectedRoom && user) {
+      const lastSeenRef = doc(db, "lastSeen", `${selectedRoom.id}_${user.uid}`);
+      const lastSeenSnap = await getDoc(lastSeenRef);
+      if (lastSeenSnap.exists()) {
+        setLastSeenMessage(lastSeenSnap.data().lastSeen);
+      }
+    }
+  };
 
   const [messages] = useCollection(
-    selectedRoom &&
+      selectedRoom &&
       query(
-        collection(doc(collection(db, "rooms"), selectedRoom.id), "messages"),
-        orderBy("timestamp"),
+          collection(doc(collection(db, "rooms"), selectedRoom.id), "messages"),
+          orderBy("timestamp"),
       ),
   );
 
+  // Mark messages as seen by the user
+  const markMessagesAsSeen = async () => {
+    if (selectedRoom && user) {
+      const lastSeenRef = doc(db, "lastSeen", `${selectedRoom.id}_${user.uid}`);
+      await setDoc(lastSeenRef, {
+        userId: user.uid,
+        roomId: selectedRoom.id,
+        lastSeen: Timestamp.now(),
+      }, { merge: true });
+    }
+  };
+
   useEffect(() => {
-    if (containerRef.current)
-      if (
-        containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
-          containerRef.current?.clientHeight + 200 ||
-        containerRef.current?.scrollTop === 0
-      ) {
+    // Fetch last seen message when the selected room is loaded
+    fetchLastSeenMessage();
+  }, [selectedRoom]);
+
+  useEffect(() => {
+    if (messages && lastSeenMessage && containerRef.current) {
+      // Find the message element closest to the last seen timestamp
+      const lastSeenMessageElement = document.querySelector(
+          `[data-timestamp="${Math.floor(lastSeenMessage.seconds)}"]`
+      );
+      if (lastSeenMessageElement) {
+        lastSeenMessageElement.scrollIntoView({ behavior: "smooth" });
+      } else {
+        // If no last seen message is found, scroll to the bottom by default
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
-  }, [messages]);
+
+      // Mark the latest message as seen when messages are loaded
+      markMessagesAsSeen();
+    }
+  }, [messages, lastSeenMessage]);
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);
     const groupMembersRef = collection(db, "groupMembers");
     const q = query(
-      groupMembersRef,
-      where("roomId", "==", selectedRoom?.id),
-      where("userId", "==", user?.uid),
+        groupMembersRef,
+        where("roomId", "==", selectedRoom?.id),
+        where("userId", "==", user?.uid),
     );
 
     const querySnapshot = await getDocs(q);
@@ -81,56 +119,55 @@ const Chat: React.FC<ChatProps> = () => {
     }
   };
 
-  // Replace navigate function calls with history.push
   return (
-    <div className="shadow-md flex flex-col px-10 h-full flex-grow">
-      <div className="flex items-center justify-between border-b border-gray-300">
-        <div className="flex items-center">
-          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
-          <IconButton
-            color={selectedRoom?.favorite ? "warning" : undefined}
-            onClick={() => toggleFavorite()}
-          >
-            <StarBorderIcon />
-          </IconButton>
-        </div>
-        <div className="flex gap-2 items-center justify-end">
-          <Tooltip title="Group members" arrow>
+      <div className="shadow-md flex flex-col px-10 h-full flex-grow">
+        <div className="flex items-center justify-between border-b border-gray-300">
+          <div className="flex items-center">
+            <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
             <IconButton
-              onClick={() => {
-                navigate(`/room/${selectedRoom?.id}/members`);
-              }}
+                color={selectedRoom?.favorite ? "warning" : undefined}
+                onClick={() => toggleFavorite()}
             >
-              <PeopleIcon />
+              <StarBorderIcon />
             </IconButton>
-          </Tooltip>
+          </div>
+          <div className="flex gap-2 items-center justify-end">
+            <Tooltip title="Group members" arrow>
+              <IconButton
+                  onClick={() => {
+                    navigate(`/room/${selectedRoom?.id}/members`);
+                  }}
+              >
+                <PeopleIcon />
+              </IconButton>
+            </Tooltip>
 
-          <Tooltip title="Details" arrow>
-            <IconButton
-              onClick={() => {
-                if (selectedRoom?.linkToData) {
-                  window.open(selectedRoom.linkToData);
-                }
-              }}
-            >
-              <HelpOutlineIcon />
-            </IconButton>
-          </Tooltip>
+            <Tooltip title="Details" arrow>
+              <IconButton
+                  onClick={() => {
+                    if (selectedRoom?.linkToData) {
+                      window.open(selectedRoom.linkToData);
+                    }
+                  }}
+              >
+                <HelpOutlineIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
         </div>
+        <div
+            aria-label="message container"
+            tabIndex={0}
+            className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
+            ref={containerRef}
+        >
+          {messages?.docs.map((doc) => (
+              <Message key={doc.id} {...(doc.data() as MessageProps)} />
+          ))}
+          <div ref={divRef}></div>
+        </div>
+        {selectedRoom?.id && <ChatInput />}
       </div>
-      <div
-        aria-label="message container"
-        tabIndex={0}
-        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
-        ref={containerRef}
-      >
-        {messages?.docs.map((doc) => (
-          <Message key={doc.id} {...(doc.data() as MessageProps)} />
-        ))}
-        <div ref={divRef}></div>
-      </div>
-      {selectedRoom?.id && <ChatInput />}
-    </div>
   );
 };
 

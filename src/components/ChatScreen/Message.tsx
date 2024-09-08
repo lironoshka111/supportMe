@@ -35,7 +35,7 @@ const Message: React.FC<MessageProps> = ({
   const isHovering = useHover(ref);
   const [emoji, setEmoji] = useState<JSX.Element>();
   return (
-    <div className="flex flex-col F rounded-md p-3" ref={ref}>
+      <div className="flex flex-col F rounded-md p-3" ref={ref} data-timestamp={timestamp.seconds}>
       <div className="bg-pink-50 rounded-md p-3">
         {user?.displayName === userName ? (
           <MyMessageContainer>
