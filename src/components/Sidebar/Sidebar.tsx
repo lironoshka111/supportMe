@@ -22,6 +22,7 @@ import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";
 import LogoutIcon from "@mui/icons-material/Logout";
+import { isString } from "../../utils/utils";
 
 interface SidebarProps {
   user: User;
@@ -44,6 +45,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
   const { setSelectedRoom, selectedRoom } = useAppContext();
   const navigate = useNavigate();
+  let location = useLocation();
+  const { pathname } = location;
+
+  // Extracting parameters from pathname
+  const params = pathname.split("/");
+
+  // Extracting parameter values from params array
+  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
 
   const handleClose = (
     event: React.SyntheticEvent | Event,
@@ -65,6 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
       for (const memberDoc of userRoomsSnapshot.docs) {
         const memberData = memberDoc.data() as GroupMember;
+        if (!isString(memberData.roomId)) continue;
         const roomRef = doc(db, "rooms", memberData.roomId);
         const roomDoc = await getDoc(roomRef);
 
@@ -77,15 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     };
 
     fetchRoomDetails();
-  }, [userRoomsSnapshot, loadingUserRooms]);
-  let location = useLocation();
-  const { pathname } = location;
-
-  // Extracting parameters from pathname
-  const params = pathname.split("/");
-
-  // Extracting parameter values from params array
-  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+  }, [userRoomsSnapshot, loadingUserRooms, roomId]);
 
   const getRoomData = (roomId: string) => {
     return {
@@ -107,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       navigate("/");
       setSelectedRoom(null);
     }
-  }, [roomId, roomsData, selectedRoom]);
+  }, [roomsData]);
 
   const selectChannel = (roomId: string) => {
     setSelectedRoom(getRoomData(roomId));
@@ -181,7 +183,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               .filter((doc) => {
                 const memberData = doc.data() as GroupMember;
                 const roomData = roomsData.get(memberData.roomId);
-                return roomData?.adminId === user.uid;
+                return (
+                  roomData?.adminId === user.uid && isString(memberData.roomId)
+                );
               })
               .map((memberDoc) => {
                 const memberData = memberDoc.data() as GroupMember;
@@ -206,20 +210,25 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             title={"Your Rooms"}
           />
           {isRoomsOpen &&
-            userRoomsSnapshot?.docs.map((memberDoc) => {
-              const memberData = memberDoc.data() as GroupMember;
-              const roomData = roomsData.get(memberData.roomId);
-              return (
-                <SidebarOption
-                  key={memberData?.roomId}
-                  id={memberData?.roomId}
-                  Icon={TagIcon}
-                  title={roomData?.roomTitle || "Unnamed Room"}
-                  isChannel={true}
-                  selectChannel={() => selectChannel(memberData.roomId)}
-                />
-              );
-            })}
+            userRoomsSnapshot?.docs
+              .filter((data) => {
+                const memberData = data.data() as GroupMember;
+                return isString(memberData.roomId);
+              })
+              .map((memberDoc) => {
+                const memberData = memberDoc.data() as GroupMember;
+                const roomData = roomsData.get(memberData.roomId);
+                return (
+                  <SidebarOption
+                    key={memberData?.roomId}
+                    id={memberData?.roomId}
+                    Icon={TagIcon}
+                    title={roomData?.roomTitle || "Unnamed Room"}
+                    isChannel={true}
+                    selectChannel={() => selectChannel(memberData.roomId)}
+                  />
+                );
+              })}
         </SidebarOptionList>
 
         <SidebarOptionList>

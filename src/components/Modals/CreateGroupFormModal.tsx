@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
+  InputLabel,
   Link,
+  MenuItem,
   Modal,
+  Select,
   Slider,
   Switch,
   TextField,
@@ -24,6 +28,7 @@ import LocationAutocomplete, {
   NominatimSuggestion,
 } from "../utilities/LocationAutocomplete";
 import CloseIcon from "@mui/icons-material/Close";
+import { toast } from "react-toastify";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -38,6 +43,8 @@ interface ValidationErrors {
   contactNumber?: string;
   groupTitle?: string;
   meetingUrl?: string;
+  meetingFrequency?: string;
+  groupRules?: string;
 }
 
 const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
@@ -52,18 +59,29 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
   const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
-  const [meetingUrl, setMeetingUrl] = useState("");
+  const [meetingUrl, setMeetingUrl] = useState("https://zoom.us/");
+  const [meetingFrequency, setMeetingFrequency] = useState<string>("weekly");
+  const [groupRules, setGroupRules] = useState(
+    "Confidentiality – Keep it private.\n" +
+      "Respect – Be kind, no judgment.\n" +
+      "Stay on Topic – Keep discussions relevant.\n" +
+      "No Harassment – No trolling or abuse.\n" +
+      "Optional Sharing – Share if you want, no pressure.\n" +
+      "No Professional Advice – No medical or legal advice.\n" +
+      "Trigger Warnings – Flag sensitive content.\n" +
+      "No Ads – No promotions allowed.",
+  );
   const navigate = useNavigate();
   const { setSelectedRoom } = useAppContext();
   const [errors, setErrors] = useState<ValidationErrors>({});
 
   useEffect(() => {
-    if (diseaseDetails?.name && open) {
+    if (groupTitle && open) {
       setDescription(
-        `This group is for people who have ${diseaseDetails?.name}. The group is for sharing information and support. Please join if you have ${diseaseDetails?.name}.`,
+        `This group is for people who have ${groupTitle}. The group is for sharing information and support. Please join if you have ${groupTitle}.`,
       );
     }
-  }, [diseaseDetails?.name, open]);
+  }, [groupTitle, open]);
 
   const handleSave = async () => {
     const validationErrors = validateForm();
@@ -71,9 +89,12 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       setErrors(validationErrors);
       return;
     }
-
-    await addChannel();
     setOpen(false);
+    try {
+      await addChannel();
+    } catch (error) {
+      toast.error("Error adding new group");
+    }
   };
 
   const handleCancel = () => {
@@ -87,7 +108,9 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
     setContactNumber("");
     setDescription("");
     setDiseaseDetails(undefined);
-    setMeetingUrl("");
+    // setMeetingUrl("");
+    setMeetingFrequency("weekly");
+    // setGroupRules("");
     setErrors({});
   };
 
@@ -101,7 +124,7 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
     const errors: ValidationErrors = {};
 
     if (!diseaseDetails?.name) {
-      errors.diseaseDetails = "Disease details must contain a valid name";
+      //errors.diseaseDetails = "Disease details must contain a valid name";
     }
 
     if (description.split(" ").length < 10) {
@@ -125,21 +148,42 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       errors.meetingUrl = "Meeting URL is required for online groups.";
     }
 
+    if (!meetingFrequency) {
+      errors.meetingFrequency = "Meeting frequency is required.";
+    }
+
+    if (!groupRules) {
+      errors.groupRules = "Group rules are required.";
+    }
+
     return errors;
   };
 
+  const rulesMaxLength = 1000;
+
   const addChannel = async () => {
-    const roomRef = await addDoc(collection(db, "rooms"), {
+    const roomData: any = {
       roomTitle: diseaseDetails?.name,
-      additionalDataLink: diseaseDetails?.link,
+      roomCategory: diseaseDetails?.name, // Set room category as disease name
+      additionalDataLink:
+        diseaseDetails?.link ??
+        `https://vsearch.nlm.nih.gov/vivisimo/cgi-bin/query-meta?v%3Aproject=medlineplus&v%3Asources=medlineplus-bundle&query=${diseaseDetails?.name}`,
       maxMembers: maxParticipants,
-      location,
       isOnline,
       contactNumber,
       description,
       meetingUrl,
+      meetingFrequency,
+      groupRules,
       adminId: user?.uid,
-    });
+    };
+
+    // Conditionally add 'location' only if the group is offline
+    if (!isOnline && location) {
+      roomData.location = location; // Set location only when the group is offline
+    }
+
+    const roomRef = await addDoc(collection(db, "rooms"), roomData);
 
     await addDoc(collection(db, "groupMembers"), {
       userId: user?.uid,
@@ -156,7 +200,8 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       linkToData: diseaseDetails?.link,
       favorite: false,
     });
-    navigate(`/room/${roomRef.id}`);
+
+    navigate(`/room/${roomRef.id}`, { replace: true });
     resetForm();
   };
 
@@ -236,6 +281,24 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
           </Grid>
 
           <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel id="meeting-frequency-label">
+                Meeting Frequency
+              </InputLabel>
+              <Select
+                labelId="meeting-frequency-label"
+                value={meetingFrequency}
+                label="Meeting Frequency"
+                onChange={(e) => setMeetingFrequency(e.target.value)}
+              >
+                <MenuItem value="weekly">Once a week</MenuItem>
+                <MenuItem value="biweekly">Once every two weeks</MenuItem>
+                <MenuItem value="monthly">Once a month</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
             <TextField
               multiline
               fullWidth
@@ -308,6 +371,33 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
               </Typography>
             </Grid>
           )}
+
+          <Grid item xs={12}>
+            <TextField
+              InputProps={{
+                inputProps: {
+                  style: {
+                    maxHeight: "100px",
+                    overflowY: "auto", // Enable vertical scrolling when content overflows
+                  },
+                },
+              }}
+              multiline
+              fullWidth
+              label="Group Rules"
+              value={groupRules}
+              onChange={(e) =>
+                e.target.value.length <= rulesMaxLength &&
+                setGroupRules(e.target.value)
+              }
+              margin="normal"
+              error={!!errors.groupRules}
+              helperText={
+                errors.groupRules ||
+                `${rulesMaxLength - groupRules.length} characters left`
+              }
+            />
+          </Grid>
 
           <Grid item xs={12}>
             {errors.diseaseDetails && (
