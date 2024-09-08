@@ -1,33 +1,22 @@
 import React, { useState } from "react";
 import {
-  Modal,
-  Box,
-  TextField,
-  Button,
   Avatar,
+  Box,
+  Button,
   IconButton,
+  Modal,
+  TextField,
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { updateProfile } from "firebase/auth";
-import { User } from "firebase/auth";
+import { updateProfile, User } from "firebase/auth";
+import { dummyAvatars } from "../../utils/const";
 
 interface UserSettingsProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;
 }
-
-const dummyAvatars = [
-  "https://api.dicebear.com/8.x/adventurer/svg?seed=Daisy",
-  "https://api.dicebear.com/8.x/adventurer/svg?seed=Abby",
-  "https://api.dicebear.com/8.x/adventurer/svg?seed=Sam",
-  "https://api.dicebear.com/8.x/adventurer/svg?seed=Rocky",
-  "https://api.dicebear.com/8.x/lorelei-neutral/svg?seed=Patches",
-  "https://api.dicebear.com/8.x/open-peeps/svg?seed=Patches",
-  "https://api.dicebear.com/8.x/pixel-art/svg?seed=Patches",
-  "https://api.dicebear.com/8.x/thumbs/svg?seed=Miss%20kitty",
-];
 
 const UserSettings: React.FC<UserSettingsProps> = ({
   isOpen,
@@ -73,7 +62,7 @@ const UserSettings: React.FC<UserSettingsProps> = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 300, // Reduced width
+          width: "50vh", // Reduced width
           height: "auto", // Adjust height
           maxHeight: "80vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",

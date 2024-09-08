@@ -37,7 +37,10 @@ interface ValidationErrors {
   groupTitle?: string;
 }
 
-const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
+const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
+  open,
+  setOpen,
+}) => {
   const [user] = useAuthState(auth);
   const [groupTitle, setGroupTitle] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(1);
@@ -156,7 +159,7 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "50%",
+          width: "50vh",
           overflowY: "auto",
           height: "auto", // Adjust height
           maxHeight: "90vh", // Ensure it doesn't exceed viewport height
@@ -291,4 +294,4 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   );
 };
 
-export default GroupFormModal;
+export default CreateGroupFormModal;

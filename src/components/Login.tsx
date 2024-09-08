@@ -1,15 +1,25 @@
 import styled from "@emotion/styled";
 import { Button, Link } from "@mui/material";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithPopup, updateProfile } from "firebase/auth";
 import React from "react";
 import { auth, provider } from "../firebase";
 import { colors } from "../theme/colors";
+import { dummyAvatars } from "../utils/const";
 
 const Login = () => {
-  const login = () => {
-    signInWithPopup(auth, provider);
+  const login = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        await updateProfile(result.user, {
+          displayName: "Anonymous",
+          photoURL: dummyAvatars[0],
+        });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+    }
   };
-
   return (
     <LoginContainer>
       <div className="flex flex-col gap-10 justify-center items-center flex-grow">

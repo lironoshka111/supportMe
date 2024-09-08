@@ -11,6 +11,7 @@ interface User {
 // Rooms Collection
 interface Room {
   roomTitle: string;
+  roomCategory: string;
   location?: NominatimSuggestion;
   additionalDataLink?: string;
   meetingUrl?: string;

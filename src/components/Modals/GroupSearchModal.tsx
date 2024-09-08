@@ -91,6 +91,7 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
   const joinGroup = async (roomId: string) => {
     if (!user?.uid) return;
     try {
+      setOpen(false);
       const groupMemberRef = collection(db, "groupMembers");
       const newGroupMember: GroupMember = {
         userId: user.uid ?? "",

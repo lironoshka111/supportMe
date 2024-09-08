@@ -8,7 +8,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
-import MembersPage from "./components/ChatScreen/MembersPage";
+import EditRoomPage from "./components/ChatScreen/EditRoomPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress, useMediaQuery } from "@mui/material";
@@ -38,7 +38,10 @@ function App() {
             <MainContent>
               <Routes>
                 <Route path="/" element={<AboutPage />} />
-                <Route path="/room/:roomId/members" element={<MembersPage />} />
+                <Route
+                  path="/room/:roomId/members"
+                  element={<EditRoomPage />}
+                />
                 <Route path="/room/:roomId" element={<Chat />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="*" element={<Navigate to="/" />} />

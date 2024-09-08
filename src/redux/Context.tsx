@@ -6,6 +6,7 @@ export interface SelectedRoomType {
   title: string;
   linkToData?: string;
   favorite?: boolean;
+  onlineMeetingUrl?: string;
 }
 
 interface ContextProps {

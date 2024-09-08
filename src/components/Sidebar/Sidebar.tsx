@@ -14,7 +14,7 @@ import { AlertTitle, Snackbar } from "@mui/material";
 import { User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import GroupFormModal from "../Modals/GroupFormModal";
+import CreateGroupFormModal from "../Modals/CreateGroupFormModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
 import { GroupMember, Room } from "../../types/models";
@@ -94,6 +94,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       favorite: userRoomsSnapshot?.docs
         .find((doc) => (doc.data() as GroupMember).roomId === roomId)
         ?.data().isFavorite,
+      onlineMeetingUrl: roomsData.get(roomId)?.meetingUrl,
     };
   };
 
@@ -163,6 +164,34 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             onClick={setNewRoomModalOpen.setTrue}
           />
         </SidebarOptionList>
+        <SidebarOptionList>
+          <OptionContainer
+            onClick={toggleRooms}
+            Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+            title={"Your Manage Rooms"}
+          />
+          {isRoomsOpen &&
+            userRoomsSnapshot?.docs
+              .filter((doc) => {
+                const memberData = doc.data() as GroupMember;
+                const roomData = roomsData.get(memberData.roomId);
+                return roomData?.adminId === user.uid;
+              })
+              .map((memberDoc) => {
+                const memberData = memberDoc.data() as GroupMember;
+                const roomData = roomsData.get(memberData.roomId);
+                return (
+                  <SidebarOption
+                    key={memberData?.roomId}
+                    id={memberData?.roomId}
+                    Icon={TagIcon}
+                    title={roomData?.roomTitle || "Unnamed Room"}
+                    isChannel={true}
+                    selectChannel={() => selectChannel(memberData.roomId)}
+                  />
+                );
+              })}
+        </SidebarOptionList>
 
         <SidebarOptionList>
           <OptionContainer
@@ -225,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         </Alert>
       </Snackbar>
       {newRoomModalOpen && (
-        <GroupFormModal
+        <CreateGroupFormModal
           open={newRoomModalOpen}
           setOpen={setNewRoomModalOpen.set}
         />
