@@ -24,7 +24,7 @@ const Login = () => {
     <LoginContainer>
       <div className="flex flex-col gap-10 justify-center items-center flex-grow">
         <img
-          src="/images/supportmeLogin.jpg"
+          src="/images/logo.png"
           alt="logo"
           className="w-[280px] rounded-xl"
         />

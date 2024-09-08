@@ -33,6 +33,7 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^10.0.5",
     "typescript": "^4.4.2",
+    "use-async-memo": "^1.2.5",
     "web-vitals": "^2.1.0"
   },
   "scripts": {

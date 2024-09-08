@@ -3,9 +3,11 @@ import {
   Box,
   Button,
   FormControlLabel,
+  Grid,
   IconButton,
   Link,
   Modal,
+  Slider,
   Switch,
   TextField,
   Typography,
@@ -35,6 +37,7 @@ interface ValidationErrors {
   location?: string;
   contactNumber?: string;
   groupTitle?: string;
+  meetingUrl?: string;
 }
 
 const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
@@ -43,12 +46,13 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
 }) => {
   const [user] = useAuthState(auth);
   const [groupTitle, setGroupTitle] = useState("");
-  const [maxParticipants, setMaxParticipants] = useState(1);
+  const [maxParticipants, setMaxParticipants] = useState(100); // default value
   const [location, setLocation] = useState<NominatimSuggestion>();
   const [isOnline, setIsOnline] = useState(true);
   const [contactNumber, setContactNumber] = useState("");
   const [description, setDescription] = useState("");
   const [diseaseDetails, setDiseaseDetails] = useState<diseaseDetails>();
+  const [meetingUrl, setMeetingUrl] = useState("");
   const navigate = useNavigate();
   const { setSelectedRoom } = useAppContext();
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -59,7 +63,7 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
         `This group is for people who have ${diseaseDetails?.name}. The group is for sharing information and support. Please join if you have ${diseaseDetails?.name}.`,
       );
     }
-  }, [diseaseDetails?.name]);
+  }, [diseaseDetails?.name, open]);
 
   const handleSave = async () => {
     const validationErrors = validateForm();
@@ -77,12 +81,13 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
   };
 
   const resetForm = () => {
-    setMaxParticipants(1);
+    setMaxParticipants(100);
     setLocation(undefined);
     setIsOnline(true);
     setContactNumber("");
     setDescription("");
     setDiseaseDetails(undefined);
+    setMeetingUrl("");
     setErrors({});
   };
 
@@ -99,7 +104,7 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       errors.diseaseDetails = "Disease details must contain a valid name";
     }
 
-    if (description.split(" ").length < 2) {
+    if (description.split(" ").length < 10) {
       errors.description = "Description must be at least 10 words.";
     }
 
@@ -111,8 +116,13 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
     if (!isOnline && !location) {
       errors.location = "Location is required for offline events.";
     }
+
     if (!groupTitle) {
       errors.groupTitle = "Group Title is required";
+    }
+
+    if (isOnline && !meetingUrl) {
+      errors.meetingUrl = "Meeting URL is required for online groups.";
     }
 
     return errors;
@@ -127,10 +137,10 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       isOnline,
       contactNumber,
       description,
+      meetingUrl,
       adminId: user?.uid,
     });
 
-    // Add the user who created the room as a member in the groupMembers collection
     await addDoc(collection(db, "groupMembers"), {
       userId: user?.uid,
       roomId: roomRef.id,
@@ -146,7 +156,7 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       linkToData: diseaseDetails?.link,
       favorite: false,
     });
-    navigate(`/room/${roomRef.id}`); // Navigate to the newly created rooms
+    navigate(`/room/${roomRef.id}`);
     resetForm();
   };
 
@@ -155,14 +165,13 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       <Box
         className="rounded-lg"
         sx={{
-          position: "absolute" as "absolute",
+          position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "50vh",
+          width: { xs: "90vw", sm: "60vw", md: "50vw" },
+          maxHeight: "90vh",
           overflowY: "auto",
-          height: "auto", // Adjust height
-          maxHeight: "90vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
@@ -170,125 +179,153 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
       >
         <IconButton
           onClick={handleCancel}
-          sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-          }}
+          sx={{ position: "absolute", top: 8, right: 8 }}
         >
           <CloseIcon />
         </IconButton>
+
         <Typography variant="h6" component="h2">
-          Create new Group
+          Create New Group
         </Typography>
 
-        <GeneticDiseaseSearch
-          setDiseaseDetails={(name) => {
-            setDiseaseDetails(name);
-            setGroupTitle(name?.name ?? "");
-          }}
-        />
-
-        <TextField
-          fullWidth
-          label="Group Title"
-          value={groupTitle}
-          onChange={(e) => setGroupTitle(e.target.value)}
-          margin="normal"
-          error={!!errors.groupTitle}
-          helperText={errors.groupTitle}
-        />
-
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isOnline}
-              onChange={(e) => setIsOnline(e.target.checked)}
-            />
-          }
-          label="not Limit"
-        />
-
-        <TextField
-          fullWidth
-          label="Max Number of Participants"
-          type="number"
-          value={maxParticipants}
-          onChange={(e) => setMaxParticipants(+e.target.value)}
-          margin="normal"
-          error={!!errors.maxParticipants}
-          helperText={errors.maxParticipants}
-        />
-
-        <TextField
-          multiline
-          fullWidth
-          label="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          margin="normal"
-          error={!!errors.description}
-          helperText={errors.description}
-        />
-
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isOnline}
-              onChange={(e) => setIsOnline(e.target.checked)}
-            />
-          }
-          label="Online"
-        />
-
-        {!isOnline && (
-          <div className="flex flex-col">
-            <LocationAutocomplete
-              onSelect={(location) => {
-                setLocation(location);
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <GeneticDiseaseSearch
+              setDiseaseDetails={(name) => {
+                setDiseaseDetails(name);
+                setGroupTitle(name?.name ?? "");
               }}
-              error={errors.location}
             />
+          </Grid>
+
+          <Grid item xs={12}>
             <TextField
               fullWidth
-              label="Contact Number"
-              value={contactNumber}
-              onChange={(e) => setContactNumber(e.target.value)}
+              label="Group Title"
+              value={groupTitle}
+              onChange={(e) => setGroupTitle(e.target.value)}
               margin="normal"
-              error={!!errors.contactNumber}
-              helperText={errors.contactNumber}
+              error={!!errors.groupTitle}
+              helperText={errors.groupTitle}
             />
-          </div>
-        )}
+          </Grid>
 
-        {diseaseDetails?.link && (
-          <Typography mt={2}>
-            <Link
-              href={diseaseDetails.link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              More information about {diseaseDetails.name}
-            </Link>
-          </Typography>
-        )}
-
-        <Box mt={2}>
-          {errors.diseaseDetails && (
-            <Typography color="error" variant="body2">
-              {errors.diseaseDetails}
+          <Grid item xs={12}>
+            <Typography color="secondary" gutterBottom>
+              Max Number of Participants
             </Typography>
-          )}
-        </Box>
+            <Slider
+              value={maxParticipants}
+              onChange={(e, value) => setMaxParticipants(value as number)}
+              valueLabelDisplay="on"
+              step={5}
+              marks={[
+                {
+                  value: 5,
+                  label: "5",
+                },
+                {
+                  value: 100,
+                  label: "100",
+                },
+              ]}
+              min={5}
+              max={100}
+              aria-labelledby="max-participants-slider"
+            />
+          </Grid>
 
-        <Box display="flex" justifyContent="space-between" mt={2}>
-          <Button variant="outlined" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button variant="contained" color="primary" onClick={handleSave}>
-            Save
-          </Button>
-        </Box>
+          <Grid item xs={12}>
+            <TextField
+              multiline
+              fullWidth
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              margin="normal"
+              error={!!errors.description}
+              helperText={errors.description}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isOnline}
+                  onChange={(e) => setIsOnline(e.target.checked)}
+                />
+              }
+              label="Online"
+            />
+          </Grid>
+
+          {isOnline ? (
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Meeting URL"
+                value={meetingUrl}
+                onChange={(e) => setMeetingUrl(e.target.value)}
+                margin="normal"
+                error={!!errors.meetingUrl}
+                helperText={errors.meetingUrl}
+              />
+            </Grid>
+          ) : (
+            <>
+              <Grid item xs={12}>
+                <LocationAutocomplete
+                  onSelect={(location) => setLocation(location)}
+                  error={errors.location}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Contact Number"
+                  value={contactNumber}
+                  onChange={(e) => setContactNumber(e.target.value)}
+                  margin="normal"
+                  error={!!errors.contactNumber}
+                  helperText={errors.contactNumber}
+                />
+              </Grid>
+            </>
+          )}
+
+          {diseaseDetails?.link && (
+            <Grid item xs={12}>
+              <Typography mt={2}>
+                <Link
+                  href={diseaseDetails.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  More information about {diseaseDetails.name}
+                </Link>
+              </Typography>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            {errors.diseaseDetails && (
+              <Typography color="error" variant="body2">
+                {errors.diseaseDetails}
+              </Typography>
+            )}
+          </Grid>
+
+          <Grid item xs={12} display="flex" justifyContent="space-between">
+            <Button variant="outlined" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleSave}>
+              Save
+            </Button>
+          </Grid>
+        </Grid>
       </Box>
     </Modal>
   );

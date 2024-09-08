@@ -6,12 +6,12 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "../utilities/components";
 import Alert from "@mui/material/Alert";
 import { AlertTitle, Snackbar } from "@mui/material";
-import { User } from "firebase/auth";
+import { signOut, User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import CreateGroupFormModal from "../Modals/CreateGroupFormModal";
@@ -21,6 +21,7 @@ import { GroupMember, Room } from "../../types/models";
 import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";
+import LogoutIcon from "@mui/icons-material/Logout";
 
 interface SidebarProps {
   user: User;
@@ -111,6 +112,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const selectChannel = (roomId: string) => {
     setSelectedRoom(getRoomData(roomId));
     navigate(`/room/${roomId}`);
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/");
   };
 
   return (
@@ -241,6 +247,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                   />
                 );
               })}
+        </SidebarOptionList>
+        <SidebarOptionList>
+          <OptionContainer
+            Icon={LogoutIcon}
+            title={"Logout"}
+            onClick={handleLogout}
+          />
         </SidebarOptionList>
       </SidebarContainer>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>

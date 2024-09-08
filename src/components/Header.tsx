@@ -57,10 +57,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden opacity-90">
+    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden bg-opacity-80 ">
       {isMobile && (
         <IconButton onClick={toggleDrawer}>
-          <MenuIcon />
+          <MenuIcon className="text-white" />
         </IconButton>
       )}
 
