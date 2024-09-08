@@ -42,6 +42,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
   const addMessage = async (e?: FormEvent<HTMLFormElement>) => {
     if (messageValue) {
       e?.preventDefault();
+      setMessageValue("");
       const docRef = doc(collection(db, "rooms"), selectedRoom?.id);
       const isInappropriate = await analyzeMessage(messageValue);
       if (isInappropriate.has_profanity) {
@@ -55,7 +56,6 @@ const ChatInput: React.FC<ChatInputProps> = () => {
         userId: user?.uid,
       });
     }
-    setMessageValue("");
   };
 
   return (
@@ -95,6 +95,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
             className="p-2.5"
             aria-label="send"
             type="submit"
+            disabled={!messageValue.length}
           >
             <SendIcon />
           </IconButton>
