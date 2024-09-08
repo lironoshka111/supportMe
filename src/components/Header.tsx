@@ -17,6 +17,7 @@ import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import UserSettings from "./Modals/UserSettingsModal";
 import Sidebar from "./Sidebar/Sidebar";
+import { useAppContext } from "../redux/Context";
 
 interface HeaderProps {
   user: User;
@@ -26,8 +27,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Drawer state
   const isMobile = useMediaQuery("(max-width:600px)");
+  const { isDrawerOpen, setIsDrawerOpen } = useAppContext();
 
   const handleMenuOpen = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

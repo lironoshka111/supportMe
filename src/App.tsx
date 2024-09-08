@@ -13,6 +13,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress, useMediaQuery } from "@mui/material";
 import { colors } from "./theme/colors";
+import HomePage from "./components/HomePage";
 
 function App() {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -37,7 +38,7 @@ function App() {
             {!isMobile && <Sidebar user={user} />}
             <MainContent>
               <Routes>
-                <Route path="/" element={<AboutPage />} />
+                <Route path="/" element={<HomePage />} />
                 <Route
                   path="/room/:roomId/members"
                   element={<EditRoomPage />}
@@ -83,14 +84,14 @@ const MainContent = styled.div`
   overflow-y: auto;
 `;
 
-const HomePage = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  height: 100%;
-  h3 {
-    font-size: 24px;
-    font-weight: 500;
-  }
-`;
+// const HomePage = styled.div`
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   flex-direction: column;
+//   height: 100%;
+//   h3 {
+//     font-size: 24px;
+//     font-weight: 500;
+//   }
+// `;

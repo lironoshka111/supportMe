@@ -39,11 +39,17 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
-  const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
-  const [groupSearchModalOpen, setGroupSearchModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
-  const { setSelectedRoom, selectedRoom } = useAppContext();
+  const {
+    setSelectedRoom,
+    selectedRoom,
+    setNewRoomModalOpen,
+    setGroupSearchModalOpen,
+    newRoomModalOpen,
+    groupSearchModalOpen,
+    setIsDrawerOpen,
+  } = useAppContext();
   const navigate = useNavigate();
   let location = useLocation();
   const { pathname } = location;
@@ -101,20 +107,21 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     };
   };
 
+  const selectChannel = (roomId: string) => {
+    setSelectedRoom(getRoomData(roomId));
+    setIsDrawerOpen(false);
+    navigate(`/room/${roomId}`);
+  };
+
   useEffect(() => {
     if (!roomsData.size) return;
     if (roomId && roomsData.has(roomId)) {
-      selectedRoom?.id !== roomId && setSelectedRoom(getRoomData(roomId));
+      selectedRoom?.id !== roomId && selectChannel(roomId);
     } else {
       navigate("/");
       setSelectedRoom(null);
     }
   }, [roomsData]);
-
-  const selectChannel = (roomId: string) => {
-    setSelectedRoom(getRoomData(roomId));
-    navigate(`/room/${roomId}`);
-  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -161,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <OptionContainer
             Icon={AddCircle}
             title={"Join To Group"}
-            onClick={setGroupSearchModalOpen.setTrue}
+            onClick={() => setGroupSearchModalOpen(true)}
           />
         </SidebarOptionList>
 
@@ -169,38 +176,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <OptionContainer
             Icon={MessageIcon}
             title={"Add New Group"}
-            onClick={setNewRoomModalOpen.setTrue}
+            onClick={() => setNewRoomModalOpen(true)}
           />
-        </SidebarOptionList>
-        <SidebarOptionList>
-          <OptionContainer
-            onClick={toggleRooms}
-            Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
-            title={"Your Manage Rooms"}
-          />
-          {isRoomsOpen &&
-            userRoomsSnapshot?.docs
-              .filter((doc) => {
-                const memberData = doc.data() as GroupMember;
-                const roomData = roomsData.get(memberData.roomId);
-                return (
-                  roomData?.adminId === user.uid && isString(memberData.roomId)
-                );
-              })
-              .map((memberDoc) => {
-                const memberData = memberDoc.data() as GroupMember;
-                const roomData = roomsData.get(memberData.roomId);
-                return (
-                  <SidebarOption
-                    key={memberData?.roomId}
-                    id={memberData?.roomId}
-                    Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Room"}
-                    isChannel={true}
-                    selectChannel={() => selectChannel(memberData.roomId)}
-                  />
-                );
-              })}
         </SidebarOptionList>
 
         <SidebarOptionList>
@@ -278,13 +255,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       {newRoomModalOpen && (
         <CreateGroupFormModal
           open={newRoomModalOpen}
-          setOpen={setNewRoomModalOpen.set}
+          setOpen={setNewRoomModalOpen}
         />
       )}
       {groupSearchModalOpen && (
         <GroupSearchModal
           open={groupSearchModalOpen}
-          setOpen={setGroupSearchModalOpen.set}
+          setOpen={setGroupSearchModalOpen}
         />
       )}
     </>
