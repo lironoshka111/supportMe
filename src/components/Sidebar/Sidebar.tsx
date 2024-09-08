@@ -86,15 +86,21 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   // Extracting parameter values from params array
   const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
 
+  const getRoomData = (roomId: string) => {
+    return {
+      id: roomId,
+      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+      linkToData: roomsData.get(roomId)?.additionalDataLink,
+      favorite: userRoomsSnapshot?.docs
+        .find((doc) => (doc.data() as GroupMember).roomId === roomId)
+        ?.data().isFavorite,
+    };
+  };
+
   useEffect(() => {
     if (!roomsData.size) return;
     if (roomId && roomsData.has(roomId)) {
-      selectedRoom?.id !== roomId &&
-        setSelectedRoom({
-          id: roomId,
-          title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
-          linkToData: roomsData.get(roomId)?.additionalDataLink,
-        });
+      selectedRoom?.id !== roomId && setSelectedRoom(getRoomData(roomId));
     } else {
       navigate("/");
       setSelectedRoom(null);
@@ -102,11 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   }, [roomId, roomsData, selectedRoom]);
 
   const selectChannel = (roomId: string) => {
-    setSelectedRoom({
-      id: roomId,
-      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
-      linkToData: roomsData.get(roomId)?.additionalDataLink,
-    });
+    setSelectedRoom(getRoomData(roomId));
     navigate(`/room/${roomId}`);
   };
 
@@ -247,6 +249,7 @@ const SidebarContainer = styled.div`
   height: 100%;
   overflow-y: auto;
   resize: horizontal;
+  border-radius: 0 16px 16px 0;
 `;
 
 const SidebarTop = styled.div`

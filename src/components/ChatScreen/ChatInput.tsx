@@ -64,6 +64,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
         onSubmit={addMessage}
         component="form"
         className="flex items-center w-full"
+        sx={{ backgroundColor: "white" }}
       >
         {showEmojiPicker && (
           <div style={{ position: "absolute", bottom: "60px", left: "10px" }}>

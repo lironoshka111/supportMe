@@ -11,9 +11,9 @@ import {
 import LogoutIcon from "@mui/icons-material/Logout";
 import SettingsIcon from "@mui/icons-material/Settings";
 import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
 import { signOut, User } from "firebase/auth";
 import { auth } from "../firebase";
-import GeneticDiseaseSearch from "./utilities/GeneticDiseaseSearch";
 import { useNavigate } from "react-router-dom";
 import UserSettings from "./Modals/UserSettingsModal";
 import Sidebar from "./Sidebar/Sidebar";
@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   };
 
   return (
-    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden">
+    <div className="flex items-center w-full p-2.5 bg-header-color overflow-hidden opacity-90">
       {isMobile && (
         <IconButton onClick={toggleDrawer}>
           <MenuIcon />
@@ -74,24 +74,19 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         </Tooltip>
       </div>
 
-      <div className="flex flex-grow justify-center items-center m-5 gap-2">
-        <GeneticDiseaseSearch />
-      </div>
+      {/*<div className="flex flex-grow justify-center items-center m-5 gap-2">*/}
+      {/*  <GeneticDiseaseSearch />*/}
+      {/*</div>*/}
 
       <div className="flex justify-end flex-grow" onClick={() => navigate("/")}>
-        <Tooltip title="About page" arrow>
-          <IconButton onClick={() => navigate("/")}>
-            <Avatar
-              src="/images/logo-no-background.png"
-              variant="rounded"
-              sx={{
-                img: {
-                  width: "50px",
-                  height: "50px",
-                  objectFit: "contain",
-                },
-              }}
-            />
+        <Tooltip title="Home page" arrow>
+          <IconButton
+            onClick={() => navigate("/")}
+            sx={{
+              color: "white",
+            }}
+          >
+            <HomeIcon />
           </IconButton>
         </Tooltip>
       </div>

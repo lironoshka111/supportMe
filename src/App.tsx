@@ -12,6 +12,7 @@ import MembersPage from "./components/ChatScreen/MembersPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress, useMediaQuery } from "@mui/material";
+import { colors } from "./theme/colors";
 
 function App() {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -69,7 +70,7 @@ const AppContainer = styled.div`
 const AppBody = styled.div`
   display: flex;
   height: calc(100vh - 64px); /* Adjusted height to leave room for the header */
-  background-color: #e3d0d3;
+  background-color: ${colors.primary.lightCream};
 `;
 
 const MainContent = styled.div`

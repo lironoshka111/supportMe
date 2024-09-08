@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   FormControlLabel,
+  IconButton,
   Link,
   Modal,
   Switch,
@@ -20,6 +21,7 @@ import { useAppContext } from "../../redux/Context";
 import LocationAutocomplete, {
   NominatimSuggestion,
 } from "../utilities/LocationAutocomplete";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface GroupFormModalProps {
   open: boolean;
@@ -32,10 +34,12 @@ interface ValidationErrors {
   maxParticipants?: string;
   location?: string;
   contactNumber?: string;
+  groupTitle?: string;
 }
 
 const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
   const [user] = useAuthState(auth);
+  const [groupTitle, setGroupTitle] = useState("");
   const [maxParticipants, setMaxParticipants] = useState(1);
   const [location, setLocation] = useState<NominatimSuggestion>();
   const [isOnline, setIsOnline] = useState(true);
@@ -104,6 +108,9 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
     if (!isOnline && !location) {
       errors.location = "Location is required for offline events.";
     }
+    if (!groupTitle) {
+      errors.groupTitle = "Group Title is required";
+    }
 
     return errors;
   };
@@ -149,20 +156,55 @@ const GroupFormModal: React.FC<GroupFormModalProps> = ({ open, setOpen }) => {
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: "calc(100% - 32px)",
+          width: "50%",
           overflowY: "auto",
           height: "auto", // Adjust height
-          maxHeight: "80vh", // Ensure it doesn't exceed viewport height
+          maxHeight: "90vh", // Ensure it doesn't exceed viewport height
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
         }}
       >
+        <IconButton
+          onClick={handleCancel}
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <Typography variant="h6" component="h2">
-          Group Details
+          Create new Group
         </Typography>
 
-        <GeneticDiseaseSearch setDiseaseDetails={setDiseaseDetails} />
+        <GeneticDiseaseSearch
+          setDiseaseDetails={(name) => {
+            setDiseaseDetails(name);
+            setGroupTitle(name?.name ?? "");
+          }}
+        />
+
+        <TextField
+          fullWidth
+          label="Group Title"
+          value={groupTitle}
+          onChange={(e) => setGroupTitle(e.target.value)}
+          margin="normal"
+          error={!!errors.groupTitle}
+          helperText={errors.groupTitle}
+        />
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isOnline}
+              onChange={(e) => setIsOnline(e.target.checked)}
+            />
+          }
+          label="not Limit"
+        />
 
         <TextField
           fullWidth

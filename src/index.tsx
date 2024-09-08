@@ -5,20 +5,8 @@ import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import { AppProvider } from "./redux/Context";
-import { createTheme, ThemeProvider } from "@mui/material";
-
-const theme = createTheme({
-  typography: {
-    fontFamily: [
-      "-apple-system",
-      "Segoe UI",
-      "sans-serif",
-      "Candara",
-      "Helvetica",
-      "Arial",
-    ].join(","),
-  },
-});
+import { ThemeProvider } from "@mui/material";
+import theme from "./theme/theme";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,

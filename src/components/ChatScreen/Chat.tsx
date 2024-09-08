@@ -83,7 +83,7 @@ const Chat: React.FC<ChatProps> = () => {
 
   // Replace navigate function calls with history.push
   return (
-    <div className="shadow-md flex flex-col px-10 h-full flex-grow">
+    <div className="flex flex-col px-5 h-full flex-grow">
       <div className="flex items-center justify-between border-b border-gray-300">
         <div className="flex items-center">
           <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
