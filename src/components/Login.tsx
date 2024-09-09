@@ -47,28 +47,30 @@ const Login = () => {
           className="w-[280px] rounded-xl"
         />
 
-        {/* Checkbox for Privacy Policy Agreement */}
-        <FormControlLabel
-          control={
-            <StyledCheckbox
-              checked={isAgreed}
-              onChange={(e) => setIsAgreed(e.target.checked)}
-            />
-          }
-          label={
-            <StyledLabel>
-              <span>I have read and agree to the</span>
-              <Link
-                href="https://heyzine.com/flip-book/85709381d7.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                privacy and cookies policy
-              </Link>
-              .
-            </StyledLabel>
-          }
-        />
+        {/* Centered Checkbox for Privacy Policy Agreement */}
+        <StyledFormControl>
+          <FormControlLabel
+            control={
+              <StyledCheckbox
+                checked={isAgreed}
+                onChange={(e) => setIsAgreed(e.target.checked)}
+              />
+            }
+            label={
+              <StyledLabel>
+                <span>I have read and agree to the</span>
+                <Link
+                  href="https://heyzine.com/flip-book/85709381d7.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  privacy and cookies policy
+                </Link>
+                .
+              </StyledLabel>
+            }
+          />
+        </StyledFormControl>
 
         <Button
           variant="contained"
@@ -110,8 +112,8 @@ const StyledCheckbox = styled(Checkbox)`
 const StyledLabel = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
+  gap: 2px;
+  font-size: 12px;
   a {
     color: ${colors.primary.teal};
     text-decoration: none;
@@ -119,6 +121,13 @@ const StyledLabel = styled.div`
       text-decoration: underline;
     }
   }
+`;
+
+const StyledFormControl = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -10px;
 `;
 
 // Container styling remains the same
