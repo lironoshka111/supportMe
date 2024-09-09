@@ -125,7 +125,12 @@ const Chat: React.FC<ChatProps> = () => {
         ref={containerRef}
       >
         {messages?.docs.map((doc) => (
-          <Message key={doc.id} {...(doc.data() as MessageProps)} />
+          <Message
+            key={doc.id}
+            {...(doc.data() as MessageProps)}
+            roomId={selectedRoom?.id ?? ""}
+            messageId={doc.id}
+          />
         ))}
         <div ref={divRef}></div>
       </div>
