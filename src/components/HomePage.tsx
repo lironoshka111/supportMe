@@ -26,6 +26,7 @@ import {
   YAxis,
 } from "recharts";
 import CreateGroupFormModal from "./Modals/CreateGroupFormModal";
+import dayjs from "dayjs";
 
 // Lazy load the AboutPage component
 const AboutPage = lazy(() => import("../components/AboutPage"));
@@ -33,8 +34,7 @@ const AboutPage = lazy(() => import("../components/AboutPage"));
 // Analytics Data Interface
 interface AnalyticsData {
   name: string;
-  messages: number;
-  participants: number;
+  messagesPerDay: { date: string; count: number }[];
 }
 
 type RoomWithId = Room & { id: string };
@@ -63,21 +63,48 @@ const HomePage: React.FC = () => {
       const channels: RoomWithId[] = [];
 
       channelDocs.forEach((doc) => {
-        channels.push({ ...doc.data(), id: doc.id } as RoomWithId);
+        if (doc.data()?.roomTitle)
+          channels.push({ ...doc.data(), id: doc.id } as RoomWithId);
       });
       setAdminChannels(channels);
-
-      // Mock analytics data based on channels
-      const analytics = channels.map((channel) => ({
-        name: channel.roomTitle,
-        messages: Math.floor(Math.random() * 100), // Placeholder for actual data
-        participants: channel.maxMembers || 0,
-      }));
-      setAnalyticsData(analytics);
+      fetchMessagesForRooms(channels);
     };
 
     fetchAdminChannels();
   }, [user]);
+
+  // Fetch messages and aggregate them per day
+  const fetchMessagesForRooms = async (rooms: RoomWithId[]) => {
+    const analytics: AnalyticsData[] = [];
+
+    for (const room of rooms) {
+      const messagesQuery = query(collection(db, `rooms/${room.id}/messages`));
+
+      const messageDocs = await getDocs(messagesQuery);
+      const messageCounts: { [key: string]: number } = {};
+
+      messageDocs.forEach((doc) => {
+        const message = doc.data();
+        const date = dayjs(message.sentTimestamp).format("YYYY-MM-DD");
+        if (!messageCounts[date]) {
+          messageCounts[date] = 0;
+        }
+        messageCounts[date] += 1;
+      });
+
+      const messagesPerDay = Object.keys(messageCounts).map((date) => ({
+        date,
+        count: messageCounts[date],
+      }));
+
+      analytics.push({
+        name: room.roomTitle,
+        messagesPerDay,
+      });
+    }
+
+    setAnalyticsData(analytics);
+  };
 
   const handleNavigateToChannel = (roomId: string) => {
     navigate(`/room/${roomId}`);
@@ -93,6 +120,8 @@ const HomePage: React.FC = () => {
   const handleShowAboutPage = () => {
     setShowAboutPage(!showAboutPage);
   };
+
+  console.log("HomePage rendered", { adminChannels, analyticsData });
 
   return (
     <Box className="flex flex-col grow-0">
@@ -170,24 +199,19 @@ const HomePage: React.FC = () => {
                     <Box className="h-40">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart
-                          data={[
-                            {
-                              name: "Messages",
-                              value: Math.floor(Math.random() * 100),
-                            }, // Mock data
-                            {
-                              name: "Participants",
-                              value: channel.maxMembers || 0,
-                            },
-                          ]}
+                          data={
+                            analyticsData.find(
+                              (a) => a.name === channel.roomTitle,
+                            )?.messagesPerDay || []
+                          }
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
+                          <XAxis dataKey="date" />
                           <YAxis />
                           <Tooltip />
                           <Line
                             type="monotone"
-                            dataKey="value"
+                            dataKey="count"
                             stroke="#8884d8"
                           />
                         </LineChart>
