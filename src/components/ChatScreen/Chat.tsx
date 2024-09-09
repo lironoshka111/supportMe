@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   addDoc,
   collection,
@@ -29,6 +29,7 @@ const Chat: React.FC<ChatProps> = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { selectedRoom, setFavorite } = useAppContext();
   const navigate = useNavigate();
+  const [lastSeen, setLastSeen] = useState<Date | null>(null);
 
   const [messages] = useCollection(
     selectedRoom &&
@@ -39,15 +40,56 @@ const Chat: React.FC<ChatProps> = () => {
   );
 
   useEffect(() => {
-    if (containerRef.current)
-      if (
+    addLastSeen();
+  }, [selectedRoom?.id]);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      if (lastSeen) {
+        messages?.docs.find((doc) => {
+          if (doc.get("timestamp").toDate() > lastSeen) {
+            divRef.current?.scrollIntoView({ behavior: "smooth" });
+            return true;
+          }
+          return false;
+        });
+        setLastSeen(null);
+      } else if (
         containerRef.current?.scrollHeight - containerRef.current?.scrollTop <
           containerRef.current?.clientHeight + 200 ||
         containerRef.current?.scrollTop === 0
       ) {
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
-  }, [messages]);
+    }
+  }, [messages, lastSeen]);
+
+  const addLastSeen = async () => {
+    try {
+      const groupMembersRef = collection(db, "groupMembers");
+      const q = query(
+        groupMembersRef,
+        where("roomId", "==", selectedRoom?.id),
+        where("userId", "==", user?.uid),
+      );
+
+      const querySnapshot = await getDocs(q);
+      // Get the first document from the query snapshot
+      const document = querySnapshot.docs[0];
+      const docRef = doc(db, "groupMembers", document.id);
+      const docSnapshot = await getDoc(docRef);
+
+      if (docSnapshot.get("lastSeen")) {
+        setLastSeen(docSnapshot.get("lastSeen").toDate());
+      } else {
+        await updateDoc(docRef, {
+          lastSeen: new Date(),
+        });
+      }
+    } catch (error) {
+      console.error("Error adding last seen:", error);
+    }
+  };
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);

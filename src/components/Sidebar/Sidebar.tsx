@@ -214,7 +214,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                     key={favData?.roomId}
                     id={favData?.roomId}
                     Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Favorite"}
+                    title={roomData?.roomTitle || "Setting Name..."}
                     isChannel={true}
                     selectChannel={() => selectChannel(favData.roomId)}
                   />
