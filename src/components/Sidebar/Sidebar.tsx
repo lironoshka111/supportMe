@@ -48,6 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     setGroupSearchModalOpen,
     newRoomModalOpen,
     groupSearchModalOpen,
+    setIsLoading,
     setIsDrawerOpen,
   } = useAppContext();
   const navigate = useNavigate();
@@ -70,6 +71,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
     setOpen(false);
   };
+
+  useEffect(() => {
+    setIsLoading(loadingUserRooms);
+  }, [loadingUserRooms]);
 
   useEffect(() => {
     if (loadingUserRooms || !userRoomsSnapshot?.size) return;
@@ -98,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const getRoomData = (roomId: string) => {
     return {
       id: roomId,
-      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+      title: roomsData.get(roomId)?.roomTitle || "Setting Name...",
       linkToData: roomsData.get(roomId)?.additionalDataLink,
       favorite: userRoomsSnapshot?.docs
         .find((doc) => (doc.data() as GroupMember).roomId === roomId)
@@ -182,6 +187,32 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
         <SidebarOptionList>
           <OptionContainer
+            RightIcon={StarBorderIcon}
+            onClick={toggleFavorites}
+            Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+            title={"Favorites"}
+          />
+          {isFavoritesOpen &&
+            userRoomsSnapshot?.docs
+              .filter((doc) => (doc.data() as GroupMember).isFavorite)
+              .map((favDoc) => {
+                const favData = favDoc.data() as GroupMember;
+                const roomData = roomsData.get(favData.roomId);
+
+                return (
+                  <SidebarOption
+                    key={favData?.roomId}
+                    id={favData?.roomId}
+                    Icon={TagIcon}
+                    title={roomData?.roomTitle || "Unnamed Favorite"}
+                    isChannel={true}
+                    selectChannel={() => selectChannel(favData.roomId)}
+                  />
+                );
+              })}
+        </SidebarOptionList>
+        <SidebarOptionList>
+          <OptionContainer
             onClick={toggleRooms}
             Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
             title={"Your Rooms"}
@@ -203,33 +234,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                     title={roomData?.roomTitle || "Unnamed Room"}
                     isChannel={true}
                     selectChannel={() => selectChannel(memberData.roomId)}
-                  />
-                );
-              })}
-        </SidebarOptionList>
-
-        <SidebarOptionList>
-          <OptionContainer
-            RightIcon={StarBorderIcon}
-            onClick={toggleFavorites}
-            Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
-            title={"Favorites"}
-          />
-          {isFavoritesOpen &&
-            userRoomsSnapshot?.docs
-              .filter((doc) => (doc.data() as GroupMember).isFavorite)
-              .map((favDoc) => {
-                const favData = favDoc.data() as GroupMember;
-                const roomData = roomsData.get(favData.roomId);
-
-                return (
-                  <SidebarOption
-                    key={favData?.roomId}
-                    id={favData?.roomId}
-                    Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Favorite"}
-                    isChannel={true}
-                    selectChannel={() => selectChannel(favData.roomId)}
                   />
                 );
               })}

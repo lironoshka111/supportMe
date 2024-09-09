@@ -6,25 +6,22 @@ import styled from "@emotion/styled";
 import Chat from "./components/ChatScreen/Chat";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
-import Login, { LoginContainer } from "./components/Login";
+import Login from "./components/Login";
 import AboutPage from "./components/AboutPage";
 import EditRoomPage from "./components/ChatScreen/EditRoomPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { CircularProgress, useMediaQuery } from "@mui/material";
+import { useMediaQuery } from "@mui/material";
 import { colors } from "./theme/colors";
 import HomePage from "./components/HomePage";
+import { Loader } from "./components/utilities/Loader";
 
 function App() {
   const isMobile = useMediaQuery("(max-width:600px)");
   const [user, loading] = useAuthState(auth);
 
   if (loading) {
-    return (
-      <LoginContainer>
-        <CircularProgress size={100} className="text-black" color="inherit" />
-      </LoginContainer>
-    );
+    return <Loader />;
   }
 
   return (
@@ -34,20 +31,21 @@ function App() {
         <>
           <Header user={user} />
           <AppBody>
-            {/* Sidebar will always be shown when user is logged in */}
-            {!isMobile && <Sidebar user={user} />}
-            <MainContent>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route
-                  path="/room/:roomId/members"
-                  element={<EditRoomPage />}
-                />
-                <Route path="/room/:roomId" element={<Chat />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-            </MainContent>
+            <>
+              {!isMobile && <Sidebar user={user} />}
+              <MainContent>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route
+                    path="/room/:roomId/members"
+                    element={<EditRoomPage />}
+                  />
+                  <Route path="/room/:roomId" element={<Chat />} />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+              </MainContent>
+            </>
           </AppBody>
         </>
       ) : (
