@@ -1,15 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { collection, doc, orderBy, query } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import PeopleIcon from "@mui/icons-material/People";
@@ -21,6 +11,10 @@ import Message from "./Message";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../redux/Context";
+import {
+  manageLastSeen,
+  toggleFavoriteStatus,
+} from "../utilities/firebaseUtils";
 
 interface ChatProps {}
 const Chat: React.FC<ChatProps> = () => {
@@ -39,12 +33,16 @@ const Chat: React.FC<ChatProps> = () => {
       ),
   );
 
+  // Memoize the unread message count based on lastSeen and selectedRoom.id
   useEffect(() => {
-    addLastSeen();
+    if (selectedRoom?.id && user?.uid) {
+      manageLastSeen(selectedRoom.id, user.uid, setLastSeen);
+    }
   }, [selectedRoom?.id]);
 
   useEffect(() => {
     if (containerRef.current) {
+      debugger;
       if (lastSeen) {
         messages?.docs.find((doc) => {
           if (doc.get("timestamp").toDate() > lastSeen) {
@@ -64,66 +62,13 @@ const Chat: React.FC<ChatProps> = () => {
     }
   }, [messages, lastSeen]);
 
-  const addLastSeen = async () => {
-    try {
-      const groupMembersRef = collection(db, "groupMembers");
-      const q = query(
-        groupMembersRef,
-        where("roomId", "==", selectedRoom?.id),
-        where("userId", "==", user?.uid),
-      );
-
-      const querySnapshot = await getDocs(q);
-      // Get the first document from the query snapshot
-      const document = querySnapshot.docs[0];
-      const docRef = doc(db, "groupMembers", document.id);
-      const docSnapshot = await getDoc(docRef);
-
-      if (docSnapshot.get("lastSeen")) {
-        setLastSeen(docSnapshot.get("lastSeen").toDate());
-      } else {
-        await updateDoc(docRef, {
-          lastSeen: new Date(),
-        });
-      }
-    } catch (error) {
-      console.error("Error adding last seen:", error);
-    }
-  };
-
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);
-    const groupMembersRef = collection(db, "groupMembers");
-    const q = query(
-      groupMembersRef,
-      where("roomId", "==", selectedRoom?.id),
-      where("userId", "==", user?.uid),
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      // Add a new document if it doesn't exist
-      await addDoc(groupMembersRef, {
-        roomId: selectedRoom?.id,
-        userId: user?.uid,
-        isFavorite: active,
-      });
-    } else {
-      // Get the first document from the query snapshot
-      const document = querySnapshot.docs[0];
-      const docRef = doc(db, "groupMembers", document.id);
-      const docSnapshot = await getDoc(docRef);
-
-      if (docSnapshot.exists()) {
-        await updateDoc(docRef, {
-          isFavorite: active,
-        });
-      }
+    if (selectedRoom?.id && user?.uid) {
+      await toggleFavoriteStatus(selectedRoom.id, user.uid, active);
     }
   };
 
-  // Replace navigate function calls with history.push
   return (
     <div className="flex flex-col px-5 h-full flex-grow">
       <div className="flex items-center justify-between border-b border-gray-300">
