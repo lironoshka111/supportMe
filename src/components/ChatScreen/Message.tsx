@@ -50,7 +50,7 @@ const Message: React.FC<MessageProps> = ({
   const roomId = selectedRoom?.id || "";
   const isUser = userId === user?.uid;
   const displayName = isUser ? "You" : userName;
-  const userImageSrc = isUser ? userImage : user?.photoURL;
+  const userImageSrc = isUser ? user?.photoURL : userImage;
 
   // Group reactions by type
   const groupedReactions = useMemo(

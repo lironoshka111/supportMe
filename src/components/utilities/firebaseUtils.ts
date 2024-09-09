@@ -6,7 +6,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  orderBy,
   query,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -122,5 +124,93 @@ export const addReaction = async (
     console.log("Reaction added successfully");
   } catch (error) {
     console.error("Error adding reaction: ", error);
+  }
+};
+
+// Utility to fetch documents based on the roomId and userId
+export const fetchGroupMemberData = async (roomId: string, userId: string) => {
+  try {
+    const groupMembersRef = collection(db, "groupMembers");
+    const q = query(
+      groupMembersRef,
+      where("roomId", "==", roomId),
+      where("userId", "==", userId),
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs[0]; // Returns the first matching document
+  } catch (error) {
+    console.error("Error fetching group member data:", error);
+    throw error;
+  }
+};
+
+// Utility to get or update the last seen timestamp
+export const manageLastSeen = async (
+  roomId: string,
+  userId: string,
+  setLastSeen: (date: Date | null) => void,
+) => {
+  try {
+    const document = await fetchGroupMemberData(roomId, userId);
+    if (document) {
+      const docRef = doc(db, "groupMembers", document.id);
+      const docSnapshot = await getDoc(docRef);
+      if (docSnapshot.get("lastSeen")) {
+        setLastSeen(docSnapshot.get("lastSeen").toDate());
+      }
+      await updateDoc(docRef, {
+        lastSeen: new Date(),
+      });
+    }
+  } catch (error) {
+    console.error("Error managing last seen:", error);
+  }
+};
+
+// Utility to toggle favorite status for a room
+export const toggleFavoriteStatus = async (
+  roomId: string,
+  userId: string,
+  active: boolean,
+) => {
+  try {
+    const groupMembersRef = collection(db, "groupMembers");
+    const document = await fetchGroupMemberData(roomId, userId);
+
+    if (document) {
+      const docRef = doc(db, "groupMembers", document.id);
+      await updateDoc(docRef, {
+        isFavorite: active,
+      });
+    } else {
+      await addDoc(groupMembersRef, {
+        roomId: roomId,
+        userId: userId,
+        isFavorite: active,
+      });
+    }
+  } catch (error) {
+    console.error("Error toggling favorite status:", error);
+  }
+};
+
+// New Utility: Count messages between lastSeen and current date
+export const countMessagesSinceLastSeen = async (
+  roomId: string,
+  lastSeen: Date,
+) => {
+  try {
+    const messagesRef = collection(db, "rooms", roomId, "messages");
+    const lastSeenTimestamp = Timestamp.fromDate(lastSeen);
+    const q = query(
+      messagesRef,
+      where("timestamp", ">", lastSeenTimestamp),
+      orderBy("timestamp"),
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.size; // Return the count of messages
+  } catch (error) {
+    console.error("Error counting messages:", error);
+    throw error;
   }
 };

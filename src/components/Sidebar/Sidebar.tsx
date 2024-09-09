@@ -24,6 +24,7 @@ import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { isString } from "../../utils/utils";
+import { countMessagesSinceLastSeen } from "../utilities/firebaseUtils";
 
 interface SidebarProps {
   user: User;
@@ -41,7 +42,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
   const [open, setOpen] = useState(false);
-  const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
+  const [roomsData, setRoomsData] = useState<
+    Map<string, Room & { count: number }>
+  >(new Map());
   const {
     setSelectedRoom,
     selectedRoom,
@@ -86,20 +89,29 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
       for (const memberDoc of userRoomsSnapshot.docs) {
         const memberData = memberDoc.data() as GroupMember;
+        const countLastSeen = memberData.lastSeen
+          ? await countMessagesSinceLastSeen(
+              memberData.roomId,
+              memberData.lastSeen.toDate(),
+            )
+          : 0;
         if (!isString(memberData.roomId)) continue;
         const roomRef = doc(db, "rooms", memberData.roomId);
         const roomDoc = await getDoc(roomRef);
 
         if (roomDoc) {
-          roomsMap.set(memberData.roomId, roomDoc.data() as Room);
+          roomsMap.set(memberData.roomId, {
+            ...roomDoc.data(),
+            count: countLastSeen,
+          } as Room & { count: number });
         }
       }
 
-      setRoomsData(roomsMap);
+      setRoomsData(roomsMap as Map<string, Room & { count: number }>);
     };
 
     fetchRoomDetails();
-  }, [userRoomsSnapshot, loadingUserRooms, roomId]);
+  }, [userRoomsSnapshot, loadingUserRooms, roomId, selectedRoom?.id]);
 
   const getRoomData = (roomId: string) => {
     return {
@@ -110,6 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         .find((doc) => (doc.data() as GroupMember).roomId === roomId)
         ?.data().isFavorite,
       onlineMeetingUrl: roomsData.get(roomId)?.meetingUrl,
+      count: roomsData.get(roomId)?.count,
     };
   };
 
@@ -133,6 +146,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     await signOut(auth);
     navigate("/");
   };
+
+  // const countMessages = ()
 
   return (
     <>
@@ -208,13 +223,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               .map((favDoc) => {
                 const favData = favDoc.data() as GroupMember;
                 const roomData = roomsData.get(favData.roomId);
+                const title = roomData?.roomTitle
+                  ? `${roomData?.roomTitle} (${roomData.count})`
+                  : "Setting Name...";
 
                 return (
                   <SidebarOption
                     key={favData?.roomId}
                     id={favData?.roomId}
                     Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Favorite"}
+                    title={title}
                     isChannel={true}
                     selectChannel={() => selectChannel(favData.roomId)}
                   />
@@ -236,12 +254,16 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
               .map((memberDoc) => {
                 const memberData = memberDoc.data() as GroupMember;
                 const roomData = roomsData.get(memberData.roomId);
+                const title = roomData?.roomTitle
+                  ? `${roomData?.roomTitle} (${roomData.count})`
+                  : "Setting Name...";
+
                 return (
                   <SidebarOption
                     key={memberData?.roomId}
                     id={memberData?.roomId}
                     Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Room"}
+                    title={title}
                     isChannel={true}
                     selectChannel={() => selectChannel(memberData.roomId)}
                   />
