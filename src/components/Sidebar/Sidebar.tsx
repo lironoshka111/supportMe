@@ -103,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const getRoomData = (roomId: string) => {
     return {
       id: roomId,
-      title: roomsData.get(roomId)?.roomTitle || "Setting name...",
+      title: roomsData.get(roomId)?.roomTitle || "Setting Name...",
       linkToData: roomsData.get(roomId)?.additionalDataLink,
       favorite: userRoomsSnapshot?.docs
         .find((doc) => (doc.data() as GroupMember).roomId === roomId)
