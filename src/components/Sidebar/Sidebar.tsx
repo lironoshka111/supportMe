@@ -6,21 +6,23 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "../utilities/components";
 import Alert from "@mui/material/Alert";
 import { AlertTitle, Snackbar } from "@mui/material";
-import { User } from "firebase/auth";
+import { signOut, User } from "firebase/auth";
 import { useBoolean } from "ahooks";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import GroupFormModal from "../Modals/GroupFormModal";
+import CreateGroupFormModal from "../Modals/CreateGroupFormModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarOption, { OptionContainer } from "./SidebarOption";
 import { GroupMember, Room } from "../../types/models";
 import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { isString } from "../../utils/utils";
 
 interface SidebarProps {
   user: User;
@@ -37,12 +39,26 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
-  const [newRoomModalOpen, setNewRoomModalOpen] = useBoolean(false);
-  const [groupSearchModalOpen, setGroupSearchModalOpen] = useBoolean(false);
   const [open, setOpen] = useState(false);
   const [roomsData, setRoomsData] = useState<Map<string, Room>>(new Map());
-  const { setSelectedRoom, selectedRoom } = useAppContext();
+  const {
+    setSelectedRoom,
+    selectedRoom,
+    setNewRoomModalOpen,
+    setGroupSearchModalOpen,
+    newRoomModalOpen,
+    groupSearchModalOpen,
+    setIsDrawerOpen,
+  } = useAppContext();
   const navigate = useNavigate();
+  let location = useLocation();
+  const { pathname } = location;
+
+  // Extracting parameters from pathname
+  const params = pathname.split("/");
+
+  // Extracting parameter values from params array
+  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
 
   const handleClose = (
     event: React.SyntheticEvent | Event,
@@ -64,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
       for (const memberDoc of userRoomsSnapshot.docs) {
         const memberData = memberDoc.data() as GroupMember;
+        if (!isString(memberData.roomId)) continue;
         const roomRef = doc(db, "rooms", memberData.roomId);
         const roomDoc = await getDoc(roomRef);
 
@@ -76,43 +93,44 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     };
 
     fetchRoomDetails();
-  }, [userRoomsSnapshot, loadingUserRooms]);
-  let location = useLocation();
-  const { pathname } = location;
+  }, [userRoomsSnapshot, loadingUserRooms, roomId]);
 
-  // Extracting parameters from pathname
-  const params = pathname.split("/");
+  const getRoomData = (roomId: string) => {
+    return {
+      id: roomId,
+      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
+      linkToData: roomsData.get(roomId)?.additionalDataLink,
+      favorite: userRoomsSnapshot?.docs
+        .find((doc) => (doc.data() as GroupMember).roomId === roomId)
+        ?.data().isFavorite,
+      onlineMeetingUrl: roomsData.get(roomId)?.meetingUrl,
+    };
+  };
 
-  // Extracting parameter values from params array
-  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+  const selectChannel = (roomId: string) => {
+    setSelectedRoom(getRoomData(roomId));
+    setIsDrawerOpen(false);
+    navigate(`/room/${roomId}`);
+  };
 
   useEffect(() => {
     if (!roomsData.size) return;
     if (roomId && roomsData.has(roomId)) {
-      selectedRoom?.id !== roomId &&
-        setSelectedRoom({
-          id: roomId,
-          title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
-          linkToData: roomsData.get(roomId)?.additionalDataLink,
-        });
+      selectedRoom?.id !== roomId && selectChannel(roomId);
     } else {
       navigate("/");
       setSelectedRoom(null);
     }
-  }, [roomId, roomsData, selectedRoom]);
+  }, [roomsData]);
 
-  const selectChannel = (roomId: string) => {
-    setSelectedRoom({
-      id: roomId,
-      title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
-      linkToData: roomsData.get(roomId)?.additionalDataLink,
-    });
-    navigate(`/room/${roomId}`);
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/");
   };
 
   return (
     <>
-      <SidebarContainer className="bg-sidebar-color">
+      <SidebarContainer className="bg-sidebar-color grow shrink-0">
         {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
@@ -150,7 +168,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <OptionContainer
             Icon={AddCircle}
             title={"Join To Group"}
-            onClick={setGroupSearchModalOpen.setTrue}
+            onClick={() => setGroupSearchModalOpen(true)}
           />
         </SidebarOptionList>
 
@@ -158,7 +176,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           <OptionContainer
             Icon={MessageIcon}
             title={"Add New Group"}
-            onClick={setNewRoomModalOpen.setTrue}
+            onClick={() => setNewRoomModalOpen(true)}
           />
         </SidebarOptionList>
 
@@ -169,20 +187,25 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
             title={"Your Rooms"}
           />
           {isRoomsOpen &&
-            userRoomsSnapshot?.docs.map((memberDoc) => {
-              const memberData = memberDoc.data() as GroupMember;
-              const roomData = roomsData.get(memberData.roomId);
-              return (
-                <SidebarOption
-                  key={memberData?.roomId}
-                  id={memberData?.roomId}
-                  Icon={TagIcon}
-                  title={roomData?.roomTitle || "Unnamed Room"}
-                  isChannel={true}
-                  selectChannel={() => selectChannel(memberData.roomId)}
-                />
-              );
-            })}
+            userRoomsSnapshot?.docs
+              .filter((data) => {
+                const memberData = data.data() as GroupMember;
+                return isString(memberData.roomId);
+              })
+              .map((memberDoc) => {
+                const memberData = memberDoc.data() as GroupMember;
+                const roomData = roomsData.get(memberData.roomId);
+                return (
+                  <SidebarOption
+                    key={memberData?.roomId}
+                    id={memberData?.roomId}
+                    Icon={TagIcon}
+                    title={roomData?.roomTitle || "Unnamed Room"}
+                    isChannel={true}
+                    selectChannel={() => selectChannel(memberData.roomId)}
+                  />
+                );
+              })}
         </SidebarOptionList>
 
         <SidebarOptionList>
@@ -211,6 +234,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                 );
               })}
         </SidebarOptionList>
+        <SidebarOptionList>
+          <OptionContainer
+            Icon={LogoutIcon}
+            title={"Logout"}
+            onClick={handleLogout}
+          />
+        </SidebarOptionList>
       </SidebarContainer>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert
@@ -223,15 +253,15 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         </Alert>
       </Snackbar>
       {newRoomModalOpen && (
-        <GroupFormModal
+        <CreateGroupFormModal
           open={newRoomModalOpen}
-          setOpen={setNewRoomModalOpen.set}
+          setOpen={setNewRoomModalOpen}
         />
       )}
       {groupSearchModalOpen && (
         <GroupSearchModal
           open={groupSearchModalOpen}
-          setOpen={setGroupSearchModalOpen.set}
+          setOpen={setGroupSearchModalOpen}
         />
       )}
     </>
@@ -244,9 +274,11 @@ const SidebarContainer = styled.div`
   width: 260px;
   display: flex;
   flex-direction: column;
+  flex-grow: 0;
   height: 100%;
   overflow-y: auto;
   resize: horizontal;
+  border-radius: 0 16px 16px 0;
 `;
 
 const SidebarTop = styled.div`

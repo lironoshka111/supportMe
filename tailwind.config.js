@@ -1,10 +1,12 @@
+const { colors } = require("./src/theme/colors");
+
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        "header-color": "#c4999e",
-        "sidebar-color": "#c4999e",
+        "header-color": colors.primary.teal,
+        "sidebar-color": colors.primary.teal,
       },
       spacing: {
         2.5: "10px",
