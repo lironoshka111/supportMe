@@ -15,6 +15,7 @@ import StarBorderIcon from "@mui/icons-material/StarBorder";
 import PeopleIcon from "@mui/icons-material/People";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import InfoIcon from "@mui/icons-material/Info";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../../firebase";
 import Message from "./Message";
@@ -102,6 +103,16 @@ const Chat: React.FC<ChatProps> = () => {
               }}
             >
               <PeopleIcon />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Group members" arrow>
+            <IconButton
+              onClick={() => {
+                navigate(`/room/${selectedRoom?.id}/members`);
+              }}
+            >
+              <InfoIcon />
             </IconButton>
           </Tooltip>
 
