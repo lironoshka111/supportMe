@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { auth, db } from "../../firebase";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -23,6 +30,7 @@ const RoomChatInfo: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>(); // Get the roomId from the URL params
   const [user] = useAuthState(auth);
   const [roomData, setRoomData] = useState<Room | null>(null);
+  const [membersCount, setMembersCount] = useState<number>(0); // To hold the number of members
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +51,19 @@ const RoomChatInfo: React.FC = () => {
       }
     };
 
+    const fetchMembersCount = async () => {
+      try {
+        const groupMembersRef = collection(db, "groupMembers"); // Collection of group members
+        const q = query(groupMembersRef, where("roomId", "==", roomId)); // Query members with matching roomId
+        const querySnapshot = await getDocs(q);
+        setMembersCount(querySnapshot.size); // Set the count of members
+      } catch (error) {
+        toast.error("Error fetching room members count");
+      }
+    };
+
     fetchRoomInfo();
+    fetchMembersCount();
   }, [roomId]);
 
   const handleBack = () => {
@@ -111,7 +131,7 @@ const RoomChatInfo: React.FC = () => {
               <Box display="flex" alignItems="center" gap={2}>
                 <GroupIcon color="primary" />
                 <Typography variant="body1">
-                  {roomData.maxMembers || "Unlimited"} Max Members
+                  {membersCount}/{roomData.maxMembers} Members
                 </Typography>
               </Box>
             </Box>
@@ -122,6 +142,23 @@ const RoomChatInfo: React.FC = () => {
                 <Typography variant="body1" ml={1}>
                   {roomData.location.display_name}
                 </Typography>
+              </Box>
+            )}
+
+            {roomData.meetingUrl && (
+              <Box mb={2}>
+                <Typography variant="subtitle1" fontWeight="bold">
+                  Meeting Link:
+                </Typography>
+                <Button
+                  href={roomData.meetingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="outlined"
+                  color="primary"
+                >
+                  Join Meeting
+                </Button>
               </Box>
             )}
 
@@ -150,7 +187,12 @@ const RoomChatInfo: React.FC = () => {
                 <Typography variant="subtitle1" fontWeight="bold">
                   Group Rules:
                 </Typography>
-                <Typography variant="body1">{roomData.groupRules}</Typography>
+                {/* Split the group rules into lines */}
+                {roomData.groupRules.split("\n").map((rule, index) => (
+                  <Typography key={index} variant="body1">
+                    {rule}
+                  </Typography>
+                ))}
               </Box>
             )}
 
