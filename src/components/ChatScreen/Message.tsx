@@ -8,6 +8,7 @@ import { useHover } from "ahooks";
 import { auth, db } from "../../firebase";
 import { Message as MessageType } from "../../types/models";
 import { useAppContext } from "../../redux/Context";
+import classNames from "classnames";
 
 // Interface for Message Props
 export type MessageProps = MessageType & {
@@ -39,6 +40,7 @@ const Message: React.FC<MessageProps> = ({
   reactions = [],
   userImage,
   userName,
+  userId,
 }) => {
   const [user] = useAuthState(auth);
   const ref = useRef<HTMLDivElement>(null);
@@ -46,6 +48,9 @@ const Message: React.FC<MessageProps> = ({
   const [emojis, setEmojis] = useState(defaultEmojis);
   const { selectedRoom } = useAppContext();
   const roomId = selectedRoom?.id || "";
+  const isUser = userId === user?.uid;
+  const displayName = isUser ? "You" : userName;
+  const userImageSrc = isUser ? userImage : user?.photoURL;
 
   // Group reactions by type
   const groupedReactions = useMemo(
@@ -98,17 +103,22 @@ const Message: React.FC<MessageProps> = ({
   };
 
   return (
-    <div ref={ref} className="flex flex-col rounded-md p-3">
-      <div className="bg-pink-50 rounded-md p-3">
+    <div ref={ref} className="flex flex-col rounded-md">
+      <div
+        className={classNames(
+          "rounded-md p-3",
+          isUser ? "bg-message-user" : "bg-pink-50",
+        )}
+      >
         <MessageContainer>
           <Avatar
             variant="rounded"
-            src={userImage}
+            src={userImageSrc || ""}
             sx={{ width: 50, height: 50 }}
           />
           <MessageInfo>
             <MessageInfoTop>
-              <h4>{userName}</h4>
+              <h4>{displayName}</h4>
               <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
             </MessageInfoTop>
             <MessageText>{message}</MessageText>

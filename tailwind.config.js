@@ -7,6 +7,7 @@ module.exports = {
       colors: {
         "header-color": colors.primary.teal,
         "sidebar-color": colors.primary.teal,
+        "message-user": colors.primary.lightTeal,
       },
       spacing: {
         2.5: "10px",
