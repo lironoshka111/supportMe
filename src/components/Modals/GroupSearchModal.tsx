@@ -58,12 +58,10 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
   }, [title]);
 
   useEffect(() => {
-    // Fetch room titles for autocomplete
     const fetchRoomTitles = async () => {
       if (!user?.uid) return;
 
       try {
-        // Step 1: Fetch the rooms where the user has already joined
         const joinedRoomsQuery = query(
           collection(db, "groupMembers"),
           where("userId", "==", user.uid),
@@ -73,7 +71,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
           (doc) => doc.data().roomId,
         );
 
-        // Step 2: Fetch room titles from the rooms collection, excluding joined rooms
         const roomTitles: string[] = [];
         const roomsQuery = query(
           collection(db, "rooms"),
@@ -81,13 +78,9 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
         );
         const roomsSnapshot = await getDocs(roomsQuery);
 
-        // Iterate through the rooms
         for (const doc of roomsSnapshot.docs) {
           const room = doc.data() as RoomWithId;
-
-          // Check if room is already full
           if (room.maxMembers) {
-            // Query to count current members in the group
             const groupMembersRef = collection(db, "groupMembers");
             const membersQuery = query(
               groupMembersRef,
@@ -95,8 +88,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
             );
             const membersSnapshot = await getDocs(membersQuery);
             const currentMembersCount = membersSnapshot.size;
-
-            // If the group is full or the user has already joined, skip it
             if (
               currentMembersCount >= room.maxMembers ||
               joinedRoomIds.includes(doc.id)
@@ -104,13 +95,10 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
               continue;
             }
           }
-
-          // Add the room title if it passes the checks
           if (room.roomTitle) {
             roomTitles.push(room.roomTitle);
           }
         }
-
         setAutocompleteOptions(roomTitles);
       } catch (error) {
         console.error("Error fetching room titles: ", error);
@@ -123,12 +111,23 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
   const handleSearch = async () => {
     setResults([]);
     try {
+      if (!user?.uid) return;
+
+      // Step 1: Fetch the rooms the user has already joined
+      const joinedRoomsQuery = query(
+        collection(db, "groupMembers"),
+        where("userId", "==", user.uid),
+      );
+      const joinedRoomsSnapshot = await getDocs(joinedRoomsQuery);
+      const joinedRoomIds = joinedRoomsSnapshot.docs.map(
+        (doc) => doc.data().roomId,
+      );
+
+      // Step 2: Fetch rooms (either online or offline depending on filter)
       let q;
       if (isOnlineFilter) {
-        // Query for online rooms only
         q = query(collection(db, "rooms"), where("isOnline", "==", true));
       } else {
-        // Query for offline rooms only
         q = query(collection(db, "rooms"), where("isOnline", "==", false));
       }
 
@@ -137,19 +136,22 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
       querySnapshot.forEach((doc) => {
         const room = doc.data() as RoomWithId;
 
-        // Filter locally by room title
-        if (
-          room.roomTitle >= searchTerm &&
-          room.roomTitle <= searchTerm + "\uf8ff"
-        ) {
-          rooms.push({
-            ...room,
-            id: doc.id,
-          });
+        // Filter out rooms that the user is already in
+        if (!joinedRoomIds.includes(doc.id)) {
+          // Filter locally by room title
+          if (
+            room.roomTitle >= searchTerm &&
+            room.roomTitle <= searchTerm + "\uf8ff"
+          ) {
+            rooms.push({
+              ...room,
+              id: doc.id,
+            });
+          }
         }
       });
 
-      // If location filter is applied (for offline rooms), filter rooms based on distance
+      // Step 3: Apply location-based filtering and sorting (if not online)
       if (!isOnlineFilter && currentLocation) {
         rooms = rooms
           .filter((room) => {
@@ -160,11 +162,10 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
               +room.location.lat,
               +room.location.lon,
             );
-            room["distance"] = distance; // Add distance to the room object for sorting
+            room["distance"] = distance;
             return distance <= locationRange;
           })
           .sort((a, b) => {
-            // Sort based on the selected order
             return sortOrder === "closest"
               ? a.distance! - b.distance!
               : b.distance! - a.distance!;
@@ -173,7 +174,7 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
 
       setResults(rooms);
     } catch (error) {
-      console.error("Error searching rooms: ", error);
+      toast.error("Error searching rooms");
     }
   };
 
@@ -181,7 +182,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
     if (!user?.uid) return;
     setOpen(false);
     try {
-      // Query to count current members in the group
       const groupMembersRef = collection(db, "groupMembers");
       const membersQuery = query(
         groupMembersRef,
@@ -190,13 +190,11 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
       const membersSnapshot = await getDocs(membersQuery);
       const currentMembersCount = membersSnapshot.size;
 
-      // Check if group is full
       if (maxMembers && currentMembersCount >= maxMembers) {
         toast.error("The group is full. Unable to join.");
         return;
       }
 
-      // Add user to the group if not full
       const newGroupMember: GroupMember = {
         userId: user.uid,
         roomId,
@@ -222,7 +220,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
       </div>
       <DialogContent>
         <Grid container spacing={2}>
-          {/* Search Bar */}
           <Grid item xs={12}>
             <Autocomplete
               freeSolo
@@ -249,8 +246,7 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
             />
           </Grid>
 
-          {/* Filters */}
-          <Grid item xs={12} sm={6}>
+          <Grid item xs={12}>
             <FormControlLabel
               control={
                 <Checkbox
@@ -258,47 +254,45 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
                   onChange={(e) => setIsOnlineFilter(e.target.checked)}
                 />
               }
-              label={<InputLabel>Online</InputLabel>}
-              style={{ marginTop: "10px" }}
+              label="Online"
             />
           </Grid>
+
           {!isOnlineFilter && (
             <>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <InputLabel>Distance (km)</InputLabel>
                 <Slider
                   value={locationRange}
                   onChange={(event, value) => setLocationRange(value as number)}
-                  aria-labelledby="distance-slider"
                   valueLabelDisplay="on"
                   step={5}
-                  marks
                   min={0}
                   max={200}
                 />
               </Grid>
 
-              {/* Sorting */}
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12}>
                 <Typography>Sort by:</Typography>
                 <ToggleButtonGroup
                   value={sortOrder}
                   exclusive
-                  onChange={(event, newOrder) => setSortOrder(newOrder)}
+                  onChange={(event, newOrder) => {
+                    if (newOrder !== null) setSortOrder(newOrder);
+                  }}
                   aria-label="Sort by"
                 >
-                  <ToggleButton value="closest" aria-label="Closest First">
-                    Closest First
+                  <ToggleButton value="closest" aria-label="Closest">
+                    Closest
                   </ToggleButton>
-                  <ToggleButton value="farthest" aria-label="Farthest First">
-                    Farthest First
+                  <ToggleButton value="farthest" aria-label="Farthest">
+                    Farthest
                   </ToggleButton>
                 </ToggleButtonGroup>
               </Grid>
             </>
           )}
 
-          {/* Search Button */}
           <Grid item xs={12}>
             <Button
               variant="contained"
@@ -310,7 +304,6 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
             </Button>
           </Grid>
 
-          {/* Results */}
           <Grid item xs={12}>
             <Typography variant="h6" style={{ marginTop: "20px" }}>
               Results {results.length ? `(${results.length})` : ""}
@@ -318,39 +311,26 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
             {results.length === 0 ? (
               <Typography>No results found</Typography>
             ) : (
-              results.map((room) => {
-                const distance =
-                  room.location && currentLocation
-                    ? calculateDistance(
-                        currentLocation.lat,
-                        currentLocation.lon,
-                        +room.location.lat,
-                        +room.location.lon,
-                      )
-                    : 0;
-                return (
-                  <Card key={room.id} style={{ marginBottom: "10px" }}>
-                    <CardContent>
-                      <Typography variant="h6">{room.roomTitle}</Typography>
-                      <Typography variant="body2">
-                        {room.description}
-                      </Typography>
-                      <Typography variant="body2">
-                        {room.isOnline
-                          ? "Online"
-                          : distance && `Distance: ${distance.toFixed(2)} km`}
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        onClick={() => joinGroup(room.id, room.maxMembers)}
-                        style={{ marginTop: "10px" }}
-                      >
-                        Join Group
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })
+              results.map((room) => (
+                <Card key={room.id} style={{ marginBottom: "10px" }}>
+                  <CardContent>
+                    <Typography variant="h6">{room.roomTitle}</Typography>
+                    <Typography variant="body2">{room.description}</Typography>
+                    <Typography variant="body2">
+                      {room.isOnline
+                        ? "Online"
+                        : `Distance: ${room.distance?.toFixed(2)} km`}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      onClick={() => joinGroup(room.id, room.maxMembers)}
+                      style={{ marginTop: "10px" }}
+                    >
+                      Join Group
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
             )}
           </Grid>
         </Grid>
