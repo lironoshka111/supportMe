@@ -5,8 +5,10 @@ import React from "react";
 import { auth, provider } from "../firebase";
 import { colors } from "../theme/colors";
 import { dummyAvatars } from "../utils/const";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
   const login = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
@@ -17,6 +19,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      navigate("/", { replace: true });
       console.error("Error during login:", error);
     }
   };

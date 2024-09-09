@@ -17,7 +17,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../../firebase";
-import Message, { MessageProps } from "./Message";
+import Message from "./Message";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../redux/Context";
@@ -125,7 +125,16 @@ const Chat: React.FC<ChatProps> = () => {
         ref={containerRef}
       >
         {messages?.docs.map((doc) => (
-          <Message key={doc.id} {...(doc.data() as MessageProps)} />
+          <Message
+            key={doc.id}
+            reactions={doc.get("reactions")}
+            message={doc.get("message")}
+            timestamp={doc.get("timestamp")}
+            messageId={doc.id}
+            userId={doc.get("userId")}
+            userImage={doc.get("userImage")}
+            userName={doc.get("userName")}
+          />
         ))}
         <div ref={divRef}></div>
       </div>

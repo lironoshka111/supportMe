@@ -13,3 +13,5 @@ export type NominatimSuggestion = {
     [key: string]: string;
   };
 };
+
+export type reactionType = { reactingUserId: string; reactionType: string };
