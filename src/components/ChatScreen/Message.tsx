@@ -4,11 +4,11 @@ import { Avatar } from "@mui/material";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ReactionBarSelector } from "@charkour/react-reactions";
-import { useHover } from "ahooks";
 import { auth, db } from "../../firebase";
 import { Message as MessageType } from "../../types/models";
 import { useAppContext } from "../../redux/Context";
 import classNames from "classnames";
+import { useHover } from "ahooks";
 
 // Interface for Message Props
 export type MessageProps = MessageType & {
@@ -64,7 +64,7 @@ const Message: React.FC<MessageProps> = ({
       reactions
         .filter((reaction) => reaction.reactingUserId === user?.uid)
         .map((reaction) => reaction.reactionType),
-    [reactions, user?.uid],
+    [reactions?.length],
   );
 
   // Update selected reactions for the current user
@@ -102,9 +102,19 @@ const Message: React.FC<MessageProps> = ({
     }
   };
 
+  const reactionTable = useMemo(
+    () =>
+      emojis.map((emoji) => ({
+        ...emoji,
+        selected: emoji.selected,
+      })),
+    [emojis],
+  );
+
   return (
-    <div ref={ref} className="flex flex-col rounded-md">
+    <div key={messageId} ref={ref} className="flex flex-col rounded-md p-1">
       <div
+        key={messageId}
         className={classNames(
           "rounded-md p-3",
           isUser ? "bg-message-user" : "bg-pink-50",
@@ -138,10 +148,7 @@ const Message: React.FC<MessageProps> = ({
       {/* Conditionally render the ReactionBarSelector only when hovering */}
       {isHovering && (
         <ReactionBarSelector
-          reactions={emojis.map((emoji) => ({
-            ...emoji,
-            selected: emoji.selected,
-          }))}
+          reactions={reactionTable}
           iconSize={20}
           onSelect={handleReactionSelect}
         />
