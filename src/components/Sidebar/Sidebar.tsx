@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import TagIcon from "@mui/icons-material/Tag";
+import ForumIcon from "@mui/icons-material/Forum";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase";
@@ -231,7 +231,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                   <SidebarOption
                     key={favData?.roomId}
                     id={favData?.roomId}
-                    Icon={TagIcon}
+                    Icon={ForumIcon}
                     title={title}
                     isChannel={true}
                     selectChannel={() => selectChannel(favData.roomId)}
@@ -262,7 +262,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                   <SidebarOption
                     key={memberData?.roomId}
                     id={memberData?.roomId}
-                    Icon={TagIcon}
+                    Icon={ForumIcon}
                     title={title}
                     isChannel={true}
                     selectChannel={() => selectChannel(memberData.roomId)}
