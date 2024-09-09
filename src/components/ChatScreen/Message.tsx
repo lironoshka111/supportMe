@@ -27,82 +27,82 @@ const emojis = [
 ];
 
 const Message: React.FC<MessageProps> = ({
-                                           message,
-                                           userImage,
-                                           userName,
-                                           timestamp,
-                                           id, // Add id for the message element
-                                         }) => {
+  message,
+  userImage,
+  userName,
+  timestamp,
+  id, // Add id for the message element
+}) => {
   const [user] = useAuthState(auth);
   const ref = useRef(null);
   const isHovering = useHover(ref);
   const [emoji, setEmoji] = useState<JSX.Element>();
 
   return (
-      <div className="flex flex-col F rounded-md p-3" ref={ref} id={id}>
-        <div className="bg-pink-50 rounded-md p-3">
-          {user?.displayName === userName ? (
-              <MyMessageContainer>
-                <Avatar
-                    variant="rounded"
-                    src={userImage}
-                    sx={{ width: 50, height: 50 }}
-                />
-                <MyMessageInfo tabIndex={0}>
-                  <MyMessageInfoTop>
-                    <h4 aria-label="you" className="">
-                      YOU
-                    </h4>
-                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-                  </MyMessageInfoTop>
-                  <MessageText aria-label={`message ${message}`}>
-                    {message}
-                  </MessageText>
-                </MyMessageInfo>
-              </MyMessageContainer>
-          ) : (
-              <MessageContainer>
-                <Avatar
-                    variant="rounded"
-                    src={userImage}
-                    sx={{ width: 50, height: 50 }}
-                />
-                <MessageInfo tabIndex={0}>
-                  <MessageInfoTop>
-                    <h4 aria-label={`user name ${userName}`}>{userName}</h4>
-                    <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-                  </MessageInfoTop>
-                  <MessageText aria-label={`message ${message}`}>
-                    {message}
-                  </MessageText>
-                </MessageInfo>
-              </MessageContainer>
-          )}
-        </div>
-        {isHovering ? (
-            <ReactionBarSelector
-                reactions={emojis}
-                iconSize={10}
-                onSelect={(label) => {
-                  const foundEmoji = emojis.find(
-                      (emoji) => emoji.key === label,
-                  )?.node;
-                  if (!foundEmoji) {
-                    return;
-                  }
-                  if (foundEmoji?.toString() === emoji?.toString()) {
-                    setEmoji(undefined);
-                    return;
-                  }
-
-                  setEmoji(foundEmoji);
-                }}
+    <div className="flex flex-col F rounded-md p-3" ref={ref} id={id}>
+      <div className="bg-pink-50 rounded-md p-3">
+        {user?.displayName === userName ? (
+          <MyMessageContainer>
+            <Avatar
+              variant="rounded"
+              src={userImage}
+              sx={{ width: 50, height: 50 }}
             />
+            <MyMessageInfo tabIndex={0}>
+              <MyMessageInfoTop>
+                <h4 aria-label="you" className="">
+                  YOU
+                </h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+              </MyMessageInfoTop>
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>
+            </MyMessageInfo>
+          </MyMessageContainer>
         ) : (
-            <div className="h-[20px]" />
+          <MessageContainer>
+            <Avatar
+              variant="rounded"
+              src={userImage}
+              sx={{ width: 50, height: 50 }}
+            />
+            <MessageInfo tabIndex={0}>
+              <MessageInfoTop>
+                <h4 aria-label={`user name ${userName}`}>{userName}</h4>
+                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+              </MessageInfoTop>
+              <MessageText aria-label={`message ${message}`}>
+                {message}
+              </MessageText>
+            </MessageInfo>
+          </MessageContainer>
         )}
-        {emoji ?? <div className="h-[10px]" />}
       </div>
+      {isHovering ? (
+        <ReactionBarSelector
+          reactions={emojis}
+          iconSize={10}
+          onSelect={(label) => {
+            const foundEmoji = emojis.find(
+              (emoji) => emoji.key === label,
+            )?.node;
+            if (!foundEmoji) {
+              return;
+            }
+            if (foundEmoji?.toString() === emoji?.toString()) {
+              setEmoji(undefined);
+              return;
+            }
+
+            setEmoji(foundEmoji);
+          }}
+        />
+      ) : (
+        <div className="h-[20px]" />
+      )}
+      {emoji ?? <div className="h-[10px]" />}
+    </div>
   );
 };
 

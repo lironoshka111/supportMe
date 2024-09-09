@@ -7,83 +7,84 @@ import { colors } from "../theme/colors";
 import { dummyAvatars } from "../utils/const";
 
 const Login = () => {
-    const [isAgreed, setIsAgreed] = useState(false); // State for checkbox
+  const [isAgreed, setIsAgreed] = useState(false); // State for checkbox
 
-    const login = async () => {
-        if (!isAgreed) {
-            alert("You must agree to the cookie policy before logging in.");
-            return;
-        }
+  const login = async () => {
+    if (!isAgreed) {
+      alert("You must agree to the cookie policy before logging in.");
+      return;
+    }
 
-        try {
-            const result = await signInWithPopup(auth, provider);
-            if (result.user) {
-                await updateProfile(result.user, {
-                    displayName: "Anonymous",
-                    photoURL: dummyAvatars[0],
-                });
-            }
-        } catch (error) {
-            console.error("Error during login:", error);
-        }
-    };
+    try {
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        await updateProfile(result.user, {
+          displayName: "Anonymous",
+          photoURL: dummyAvatars[0],
+        });
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+    }
+  };
 
-    return (
-        <LoginContainer>
-            <div className="flex flex-col gap-10 justify-center items-center flex-grow">
-                <img
-                    src="/images/logo.png"
-                    alt="logo"
-                    className="w-[280px] rounded-xl"
-                />
+  return (
+    <LoginContainer>
+      <div className="flex flex-col gap-10 justify-center items-center flex-grow">
+        <img
+          src="/images/logo.png"
+          alt="logo"
+          className="w-[280px] rounded-xl"
+        />
 
-                {/* Checkbox for Cookie Policy Agreement */}
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={isAgreed}
-                            onChange={(e) => setIsAgreed(e.target.checked)}
-                        />
-                    }
-                    label={
-                        <span>
-                            I have read and agree to the{" "}
-                            <Link
-                                href="https://heyzine.com/flip-book/8a1e43a86b.html"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                cookie policy
-                            </Link>.
-                        </span>
-                    }
-                />
+        {/* Checkbox for Cookie Policy Agreement */}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={isAgreed}
+              onChange={(e) => setIsAgreed(e.target.checked)}
+            />
+          }
+          label={
+            <span>
+              I have read and agree to the{" "}
+              <Link
+                href="https://heyzine.com/flip-book/8a1e43a86b.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                cookie policy
+              </Link>
+              .
+            </span>
+          }
+        />
 
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={login}
-                    sx={{
-                        justifyContent: "center",
-                        width: "270px",
-                        height: "45px",
-                        color: "white",
-                        ":hover": {
-                            color: "white",
-                            background: "grey",
-                        },
-                    }}
-                >
-                    Login with Google
-                </Button>
-            </div>
-            <div className="flex w-full items-center text-black p-1 bg-white bg-opacity-25 font-bold">
-                <Link href={"about"} color="inherit" fontSize={15}>
-                    About Us
-                </Link>
-            </div>
-        </LoginContainer>
-    );
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={login}
+          sx={{
+            justifyContent: "center",
+            width: "270px",
+            height: "45px",
+            color: "white",
+            ":hover": {
+              color: "white",
+              background: "grey",
+            },
+          }}
+        >
+          Login with Google
+        </Button>
+      </div>
+      <div className="flex w-full items-center text-black p-1 bg-white bg-opacity-25 font-bold">
+        <Link href={"about"} color="inherit" fontSize={15}>
+          About Us
+        </Link>
+      </div>
+    </LoginContainer>
+  );
 };
 
 export default Login;
