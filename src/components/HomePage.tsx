@@ -167,7 +167,7 @@ const HomePage: React.FC = () => {
         <img
           src={"/images/logo.png"}
           alt="Support Logo"
-          className="h-[50vh] w-[50vh] rounded-full"
+          className="h-[35vh] w-[35vh] rounded-full"
         />
         <Typography
           variant="h4"
@@ -183,7 +183,7 @@ const HomePage: React.FC = () => {
       <Box className="flex justify-center gap-4 my-10">
         <Button
           variant="contained"
-          color="primary"
+          color="secondary"
           onClick={() => setNewRoomModalOpen(true)}
         >
           Create New Group
