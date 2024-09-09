@@ -1,10 +1,6 @@
 import styled from "@emotion/styled";
-import { Button, Link, Checkbox, FormControlLabel } from "@mui/material";
-import {
-  signInWithPopup,
-  updateProfile,
-  fetchSignInMethodsForEmail,
-} from "firebase/auth";
+import { Button, Checkbox, FormControlLabel, Link } from "@mui/material";
+import { signInWithPopup, updateProfile } from "firebase/auth";
 import React, { useState } from "react";
 import { auth, provider } from "../firebase";
 import { colors } from "../theme/colors";
@@ -23,25 +19,16 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
-        const userEmail = result.user.email;
+        const isNewUser =
+          (result.user as any)?.auth.currentUser?.metadata?.creationTime ===
+          (result.user as any).currentUser?.metadata?.lastSignInTime;
 
-        if (userEmail) {
-          // Check if email is not null
-          // Check if the user is signing in for the first time
-          const signInMethods = await fetchSignInMethodsForEmail(
-            auth,
-            userEmail as string,
-          );
-
-          // If the user is signing in for the first time, update the profile
-          if (signInMethods.length === 0) {
-            await updateProfile(result.user, {
-              displayName: "Anonymous",
-              photoURL: dummyAvatars[0],
-            });
-          }
-        } else {
-          console.error("User email is null.");
+        if (isNewUser) {
+          debugger;
+          await updateProfile(result.user, {
+            displayName: "Anonymous",
+            photoURL: dummyAvatars[0],
+          });
         }
       }
     } catch (error) {
