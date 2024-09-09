@@ -14,6 +14,7 @@ import { Tooltip, useMediaQuery } from "@mui/material";
 import { toast } from "react-toastify";
 import { analyzeMessage } from "../../utils/analyzeMessage";
 import { useAppContext } from "../../redux/Context";
+import { Message } from "../../types/models";
 
 interface ChatInputProps {}
 
@@ -54,7 +55,8 @@ const ChatInput: React.FC<ChatInputProps> = () => {
         userImage: user?.photoURL,
         timestamp: Timestamp.now(),
         userId: user?.uid,
-      });
+        reactions: [],
+      } as Message);
     }
   };
 

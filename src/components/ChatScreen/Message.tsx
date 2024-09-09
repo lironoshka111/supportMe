@@ -1,28 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Avatar } from "@mui/material";
-import {
-  arrayRemove,
-  arrayUnion,
-  doc,
-  Timestamp,
-  updateDoc,
-} from "firebase/firestore";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ReactionBarSelector } from "@charkour/react-reactions";
 import { useHover } from "ahooks";
 import { auth, db } from "../../firebase";
+import { Message as MessageType } from "../../types/models";
+import { useAppContext } from "../../redux/Context";
 
 // Interface for Message Props
-export interface MessageProps {
-  message: string;
-  userName: string;
-  userImage: string;
-  timestamp: Timestamp;
-  roomId: string;
+export type MessageProps = MessageType & {
   messageId: string;
-  reactions: { reactingUserId: string; reactionType: string }[];
-}
+};
+
+// Move the emoji options outside the component to prevent recreation on every render
+const defaultEmojis = [
+  { node: <div>👍</div>, label: "like", key: "like", selected: false },
+  { node: <div>❤️</div>, label: "love", key: "love", selected: false },
+  { node: <div>😆</div>, label: "haha", key: "haha", selected: false },
+  { node: <div>😮</div>, label: "wow", key: "wow", selected: false },
+  { node: <div>😢</div>, label: "sad", key: "sad", selected: false },
+  { node: <div>😡</div>, label: "angry", key: "angry", selected: false },
+];
 
 // Group reactions by type and count how many times each reaction occurs
 const groupReactionsByType = (reactions: { reactionType: string }[]) => {
@@ -34,40 +34,42 @@ const groupReactionsByType = (reactions: { reactionType: string }[]) => {
 
 const Message: React.FC<MessageProps> = ({
   message,
-  userImage,
-  userName,
   timestamp,
-  roomId,
   messageId,
   reactions = [],
+  userImage,
+  userName,
 }) => {
   const [user] = useAuthState(auth);
   const ref = useRef<HTMLDivElement>(null);
   const isHovering = useHover(ref); // Detect hover state
-  const [emojis, setEmojis] = useState([
-    { node: <div>👍</div>, label: "like", key: "like", selected: false },
-    { node: <div>❤️</div>, label: "love", key: "love", selected: false },
-    { node: <div>😆</div>, label: "haha", key: "haha", selected: false },
-    { node: <div>😮</div>, label: "wow", key: "wow", selected: false },
-    { node: <div>😢</div>, label: "sad", key: "sad", selected: false },
-    { node: <div>😡</div>, label: "angry", key: "angry", selected: false },
-  ]);
+  const [emojis, setEmojis] = useState(defaultEmojis);
+  const { selectedRoom } = useAppContext();
+  const roomId = selectedRoom?.id || "";
 
   // Group reactions by type
-  const groupedReactions = reactions ? groupReactionsByType(reactions) : {};
+  const groupedReactions = useMemo(
+    () => groupReactionsByType(reactions),
+    [reactions],
+  );
+
+  // Memoize user's reactions
+  const userReactions = useMemo(
+    () =>
+      reactions
+        .filter((reaction) => reaction.reactingUserId === user?.uid)
+        .map((reaction) => reaction.reactionType),
+    [reactions, user?.uid],
+  );
 
   // Update selected reactions for the current user
   useEffect(() => {
-    const userReactions = reactions
-      .filter((reaction) => reaction.reactingUserId === user?.uid)
-      .map((reaction) => reaction.reactionType);
-
-    const updatedEmojis = emojis.map((emoji) => ({
+    const updatedEmojis = defaultEmojis.map((emoji) => ({
       ...emoji,
       selected: userReactions.includes(emoji.key),
     }));
     setEmojis(updatedEmojis);
-  }, [reactions, user, emojis]);
+  }, [userReactions]);
 
   // Handle reaction select or remove
   const handleReactionSelect = async (reactionKey: string) => {
@@ -75,9 +77,7 @@ const Message: React.FC<MessageProps> = ({
     const messageRef = doc(db, "rooms", roomId, "messages", messageId);
 
     // Toggle reaction: add if not present, remove if already selected
-    const selectedReaction = emojis.find(
-      (emoji) => emoji.key === reactionKey,
-    )?.selected;
+    const selectedReaction = userReactions.includes(reactionKey);
     if (selectedReaction) {
       // Remove the reaction
       await updateDoc(messageRef, {
@@ -112,19 +112,18 @@ const Message: React.FC<MessageProps> = ({
               <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
             </MessageInfoTop>
             <MessageText>{message}</MessageText>
-
-            {/* Show grouped reactions */}
-            <ReactionsContainer>
-              {Object.entries(groupedReactions).map(([reactionType, count]) => (
-                <ReactionGroup key={reactionType}>
-                  {emojis.find((emoji) => emoji.key === reactionType)?.node}
-                  <ReactionCount>{count}</ReactionCount>
-                </ReactionGroup>
-              ))}
-            </ReactionsContainer>
           </MessageInfo>
         </MessageContainer>
       </div>
+
+      <ReactionsContainer>
+        {Object.entries(groupedReactions).map(([reactionType, count]) => (
+          <ReactionGroup key={reactionType}>
+            {emojis.find((emoji) => emoji.key === reactionType)?.node}
+            <ReactionCount>{count}</ReactionCount>
+          </ReactionGroup>
+        ))}
+      </ReactionsContainer>
 
       {/* Conditionally render the ReactionBarSelector only when hovering */}
       {isHovering && (
