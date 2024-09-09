@@ -5,9 +5,11 @@ import React, { useState } from "react";
 import { auth, provider } from "../firebase";
 import { colors } from "../theme/colors";
 import { dummyAvatars } from "../utils/const";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [isAgreed, setIsAgreed] = useState(false); // State for checkbox
 
   const login = async () => {
@@ -24,7 +26,6 @@ const Login = () => {
           (result.user as any).currentUser?.metadata?.lastSignInTime;
 
         if (isNewUser) {
-          debugger;
           await updateProfile(result.user, {
             displayName: "Anonymous",
             photoURL: dummyAvatars[0],
@@ -32,6 +33,7 @@ const Login = () => {
         }
       }
     } catch (error) {
+      navigate("/", { replace: true });
       console.error("Error during login:", error);
     }
   };

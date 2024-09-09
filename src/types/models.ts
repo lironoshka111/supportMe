@@ -1,4 +1,5 @@
-import { NominatimSuggestion } from "./types";
+import { NominatimSuggestion, reactionType } from "./types";
+import { Timestamp } from "firebase/firestore";
 
 // Users Collection
 interface User {
@@ -26,12 +27,12 @@ interface Room {
 
 // Messages Subcollection within Rooms
 interface Message {
-  messageId: string;
-  messageText: string;
-  sentTimestamp: number;
-  senderUserId: string;
-  roomOfMessageId: string;
-  reactions: string[];
+  message: string;
+  timestamp: Timestamp;
+  userId: string;
+  reactions?: reactionType[];
+  userName: string;
+  userImage: string;
 }
 
 // Replies Subcollection within Messages

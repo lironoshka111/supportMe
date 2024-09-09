@@ -1,165 +1,203 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styled from "@emotion/styled";
 import { Avatar } from "@mui/material";
-import { Timestamp } from "firebase/firestore";
+import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../firebase";
-import { useHover } from "ahooks";
 import { ReactionBarSelector } from "@charkour/react-reactions";
-import { jsx } from "@emotion/react";
-import JSX = jsx.JSX;
+import { auth, db } from "../../firebase";
+import { Message as MessageType } from "../../types/models";
+import { useAppContext } from "../../redux/Context";
+import classNames from "classnames";
+import { useHover } from "ahooks";
 
-export interface MessageProps {
-  message: string;
-  userName: string;
-  userImage: string;
-  timestamp: Timestamp;
-}
+// Interface for Message Props
+export type MessageProps = MessageType & {
+  messageId: string;
+};
 
-const emojis = [
-  { node: <div>👍</div>, label: "like", key: "satisfaction" },
-  { node: <div>❤️</div>, label: "love", key: "love" },
-  { node: <div>😆</div>, label: "haha", key: "happy" },
-  { node: <div>😮</div>, label: "wow", key: "surprise" },
-  { node: <div>😢</div>, label: "sad", key: "sad" },
-  { node: <div>😡</div>, label: "angry", key: "angry" },
+// Move the emoji options outside the component to prevent recreation on every render
+const defaultEmojis = [
+  { node: <div>👍</div>, label: "like", key: "like", selected: false },
+  { node: <div>❤️</div>, label: "love", key: "love", selected: false },
+  { node: <div>😆</div>, label: "haha", key: "haha", selected: false },
+  { node: <div>😮</div>, label: "wow", key: "wow", selected: false },
+  { node: <div>😢</div>, label: "sad", key: "sad", selected: false },
+  { node: <div>😡</div>, label: "angry", key: "angry", selected: false },
 ];
+
+// Group reactions by type and count how many times each reaction occurs
+const groupReactionsByType = (reactions: { reactionType: string }[]) => {
+  return reactions?.reduce((acc: Record<string, number>, reaction) => {
+    acc[reaction.reactionType] = (acc[reaction.reactionType] || 0) + 1;
+    return acc;
+  }, {});
+};
+
 const Message: React.FC<MessageProps> = ({
   message,
+  timestamp,
+  messageId,
+  reactions = [],
   userImage,
   userName,
-  timestamp,
+  userId,
 }) => {
   const [user] = useAuthState(auth);
-  const ref = useRef(null);
-  const isHovering = useHover(ref);
-  const [emoji, setEmoji] = useState<JSX.Element>();
-  return (
-    <div className="flex flex-col F rounded-md p-3" ref={ref}>
-      <div className="bg-pink-50 rounded-md p-3">
-        {user?.displayName === userName ? (
-          <MyMessageContainer>
-            <Avatar
-              variant="rounded"
-              src={userImage}
-              sx={{ width: 50, height: 50 }}
-            />
-            <MyMessageInfo tabIndex={0}>
-              <MyMessageInfoTop>
-                <h4 aria-label="you" className="">
-                  YOU
-                </h4>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-              </MyMessageInfoTop>
-              <MessageText aria-label={`message ${message}`}>
-                {message}
-              </MessageText>
-            </MyMessageInfo>
-          </MyMessageContainer>
-        ) : (
-          <MessageContainer>
-            <Avatar
-              variant="rounded"
-              src={userImage}
-              sx={{ width: 50, height: 50 }}
-            />
-            <MessageInfo tabIndex={0}>
-              <MessageInfoTop>
-                <h4 aria-label={`user name ${userName}`}>{userName}</h4>
-                <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
-              </MessageInfoTop>
-              <MessageText aria-label={`message ${message}`}>
-                {message}
-              </MessageText>
-            </MessageInfo>
-          </MessageContainer>
-        )}
-      </div>
-      {isHovering ? (
-        <ReactionBarSelector
-          reactions={emojis}
-          iconSize={10}
-          onSelect={(label) => {
-            const foundEmoji = emojis.find(
-              (emoji) => emoji.key === label,
-            )?.node;
-            if (!foundEmoji) {
-              return;
-            }
-            if (foundEmoji?.toString() === emoji?.toString()) {
-              setEmoji(undefined);
-              return;
-            }
+  const ref = useRef<HTMLDivElement>(null);
+  const isHovering = useHover(ref); // Detect hover state
+  const [emojis, setEmojis] = useState(defaultEmojis);
+  const { selectedRoom } = useAppContext();
+  const roomId = selectedRoom?.id || "";
+  const isUser = userId === user?.uid;
+  const displayName = isUser ? "You" : userName;
+  const userImageSrc = isUser ? userImage : user?.photoURL;
 
-            setEmoji(foundEmoji);
-          }}
+  // Group reactions by type
+  const groupedReactions = useMemo(
+    () => groupReactionsByType(reactions),
+    [reactions],
+  );
+
+  // Memoize user's reactions
+  const userReactions = useMemo(
+    () =>
+      reactions
+        .filter((reaction) => reaction.reactingUserId === user?.uid)
+        .map((reaction) => reaction.reactionType),
+    [reactions?.length],
+  );
+
+  // Update selected reactions for the current user
+  useEffect(() => {
+    const updatedEmojis = defaultEmojis.map((emoji) => ({
+      ...emoji,
+      selected: userReactions.includes(emoji.key),
+    }));
+    setEmojis(updatedEmojis);
+  }, [userReactions]);
+
+  // Handle reaction select or remove
+  const handleReactionSelect = async (reactionKey: string) => {
+    if (!user) return;
+    const messageRef = doc(db, "rooms", roomId, "messages", messageId);
+
+    // Toggle reaction: add if not present, remove if already selected
+    const selectedReaction = userReactions.includes(reactionKey);
+    if (selectedReaction) {
+      // Remove the reaction
+      await updateDoc(messageRef, {
+        reactions: arrayRemove({
+          reactingUserId: user.uid,
+          reactionType: reactionKey,
+        }),
+      });
+    } else {
+      // Add the reaction
+      await updateDoc(messageRef, {
+        reactions: arrayUnion({
+          reactingUserId: user.uid,
+          reactionType: reactionKey,
+        }),
+      });
+    }
+  };
+
+  const reactionTable = useMemo(
+    () =>
+      emojis.map((emoji) => ({
+        ...emoji,
+        selected: emoji.selected,
+      })),
+    [emojis],
+  );
+
+  return (
+    <div key={messageId} ref={ref} className="flex flex-col rounded-md p-1">
+      <div
+        key={messageId}
+        className={classNames(
+          "rounded-md p-3",
+          isUser ? "bg-message-user" : "bg-pink-50",
+        )}
+      >
+        <MessageContainer>
+          <Avatar
+            variant="rounded"
+            src={userImageSrc || ""}
+            sx={{ width: 50, height: 50 }}
+          />
+          <MessageInfo>
+            <MessageInfoTop>
+              <h4>{displayName}</h4>
+              <p>{new Date(timestamp.seconds * 1000).toUTCString()}</p>
+            </MessageInfoTop>
+            <MessageText>{message}</MessageText>
+          </MessageInfo>
+        </MessageContainer>
+      </div>
+
+      <ReactionsContainer>
+        {Object.entries(groupedReactions).map(([reactionType, count]) => (
+          <ReactionGroup key={reactionType}>
+            {emojis.find((emoji) => emoji.key === reactionType)?.node}
+            <ReactionCount>{count}</ReactionCount>
+          </ReactionGroup>
+        ))}
+      </ReactionsContainer>
+
+      {/* Conditionally render the ReactionBarSelector only when hovering */}
+      {isHovering && (
+        <ReactionBarSelector
+          reactions={reactionTable}
+          iconSize={20}
+          onSelect={handleReactionSelect}
         />
-      ) : (
-        <div className="h-[20px]" />
       )}
-      {emoji ?? <div className="h-[10px]" />}
     </div>
   );
 };
 
-export default Message;
-
 // Styled components
 const MessageContainer = styled.div`
-  width: 100%;
   display: flex;
   align-items: center;
-  margin: 5px 0;
-  justify-content: flex-end;
-`;
-const MyMessageContainer = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
 `;
 const MessageInfo = styled.div`
-  display: flex;
-  flex-direction: column;
   margin-left: 10px;
-  width: 100%;
-`;
-const MyMessageInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-right: 10px;
-  text-align: end;
-  width: 100%;
 `;
 const MessageInfoTop = styled.div`
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 5px;
-  p {
-    margin-left: 5px;
-    font-size: 12px;
-    color: gray;
-  }
   h4 {
     font-weight: 500;
   }
-`;
-const MyMessageInfoTop = styled.div`
-  display: flex;
-  align-items: end;
-  gap: 5px;
   p {
-    margin-right: 5px;
     font-size: 12px;
     color: gray;
   }
-  h4 {
-    font-weight: 500;
-  }
 `;
-
 const MessageText = styled.p`
-  word-wrap: break-word; /* Ensure line breaks are respected */
-  white-space: pre-wrap; /* Preserve line breaks */
+  word-wrap: break-word;
+  white-space: pre-wrap;
   text-align: left;
 `;
+
+const ReactionsContainer = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+`;
+
+const ReactionGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
+const ReactionCount = styled.span`
+  font-size: 14px;
+  color: #555;
+`;
+
+export default Message;
