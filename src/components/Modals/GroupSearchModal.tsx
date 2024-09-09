@@ -201,6 +201,7 @@ const GroupSearchModal = ({ open, setOpen, title }: GroupSearchModalProps) => {
         userId: user.uid,
         roomId,
         isFavorite: false,
+        lastViewed: new Date(),
       };
 
       await addDoc(groupMembersRef, newGroupMember);

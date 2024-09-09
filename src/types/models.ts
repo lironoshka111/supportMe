@@ -59,6 +59,7 @@ interface GroupMember {
   isAnonymous?: boolean; // Whether the user has joined the group anonymously
   nickname?: string; // Nickname the user uses in the group
   avatar?: string; // User's avatar image URL
+  lastViewed: Date;
 }
 
 // Type Aliases for References
