@@ -47,11 +47,15 @@ const Login = () => {
                     }
                     label={
                         <span>
-              I have read and agree to the{" "}
-                            <Link href="YOUR_COOKIE_POLICY_URL" target="_blank" rel="noopener noreferrer">
-                cookie policy
-              </Link>.
-            </span>
+                            I have read and agree to the{" "}
+                            <Link
+                                href="https://heyzine.com/flip-book/8a1e43a86b.html"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                cookie policy
+                            </Link>.
+                        </span>
                     }
                 />
 
