@@ -167,7 +167,7 @@ const HomePage: React.FC = () => {
         <img
           src={"/images/logo.png"}
           alt="Support Logo"
-          className="h-[50vh] w-[50vh] rounded-full"
+          className="h-[35vh] w-[35vh] rounded-full"
         />
         <Typography
           variant="h4"
@@ -183,17 +183,17 @@ const HomePage: React.FC = () => {
       <Box className="flex justify-center gap-4 my-10">
         <Button
           variant="contained"
-          color="primary"
+          color="secondary"
           onClick={() => setNewRoomModalOpen(true)}
         >
-          Create New Channel
+          Create New Group
         </Button>
         <Button
           variant="contained"
           color="secondary"
           onClick={() => setGroupSearchModalOpen(true)}
         >
-          Join a Channel
+          Join a Group
         </Button>
         <Button variant="contained" color="info" onClick={handleShowAboutPage}>
           About
@@ -208,7 +208,7 @@ const HomePage: React.FC = () => {
           gutterBottom
           className="font-semibold"
         >
-          Managed Channels
+          Managed Groups
         </Typography>
 
         {/* Empty state when there are no managed channels */}
@@ -216,7 +216,7 @@ const HomePage: React.FC = () => {
           <Paper elevation={3} className="p-6 text-center">
             <Typography variant="h6">You have no managed channels</Typography>
             <Typography className="text-gray-500">
-              Create or join a channel to get started.
+              Create or join a group to get started.
             </Typography>
           </Paper>
         ) : (
