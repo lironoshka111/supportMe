@@ -274,7 +274,7 @@ const SidebarContainer = styled.div`
   width: 260px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  flex-grow: 0;
   height: 100%;
   overflow-y: auto;
   resize: horizontal;

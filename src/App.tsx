@@ -78,10 +78,9 @@ const AppBody = styled.div`
 `;
 
 const MainContent = styled.div`
-  min-width: 0;
   padding: 20px;
-  flex-grow: 0;
   overflow-y: auto;
+  width: 100%;
   display: flex;
   flex-direction: column;
 `;
