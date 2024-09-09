@@ -5,13 +5,14 @@ import React, { useState } from "react";
 import { auth, provider } from "../firebase";
 import { colors } from "../theme/colors";
 import { dummyAvatars } from "../utils/const";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const [isAgreed, setIsAgreed] = useState(false); // State for checkbox
 
   const login = async () => {
     if (!isAgreed) {
-      alert("You must agree to the privacy policy before logging in.");
+      toast.warning("You must agree to the privacy policy before logging in.");
       return;
     }
 
@@ -46,17 +47,19 @@ const Login = () => {
             />
           }
           label={
-            <span>
-              I have read and agree to the{" "}
-              <Link
-                href="https://heyzine.com/flip-book/c08d6d9c07.html"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                privacy policy
-              </Link>
-              .
-            </span>
+            <div className="flex gap-1 pl-2">
+              <div> I have read and agree to the</div>
+              <span>
+                <Link
+                  href="https://heyzine.com/flip-book/c08d6d9c07.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  privacy policy
+                </Link>
+                .
+              </span>
+            </div>
           }
         />
 
