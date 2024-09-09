@@ -7,6 +7,7 @@ import TagIcon from "@mui/icons-material/Tag";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase";
+import MailIcon from "@mui/icons-material/Mail";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { AlertWrapper } from "../utilities/components";
 import Alert from "@mui/material/Alert";
@@ -177,6 +178,15 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           />
         </SidebarOptionList>
 
+        <SidebarOptionList>
+          <OptionContainer
+            Icon={MailIcon} // Using the mail icon
+            title={"Contact Us"}
+            onClick={() => {
+              window.location.href = "mailto:lironstavhenmta@gmail.com";
+            }}
+          />
+        </SidebarOptionList>
         <SidebarOptionList>
           <OptionContainer
             Icon={MessageIcon}
