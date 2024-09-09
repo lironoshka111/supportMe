@@ -22,6 +22,8 @@ import { useAppContext } from "../../redux/Context";
 import { AddCircle } from "@mui/icons-material";
 import { GroupSearchModal } from "../Modals";
 import LogoutIcon from "@mui/icons-material/Logout";
+import ContactMailIcon from "@mui/icons-material/ContactMail"; // Import Contact Us icon
+import ContactUsModal from "../Modals/ContactUsModal"; // Import the new modal
 import { isString } from "../../utils/utils";
 
 interface SidebarProps {
@@ -30,12 +32,12 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   const userRoomsQuery = query(
-    collection(db, "groupMembers"),
-    where("userId", "==", user.uid),
+      collection(db, "groupMembers"),
+      where("userId", "==", user.uid),
   );
 
   const [userRoomsSnapshot, loadingUserRooms, errorUserRooms] =
-    useCollection(userRoomsQuery);
+      useCollection(userRoomsQuery);
 
   const [isRoomsOpen, { toggle: toggleRooms }] = useBoolean(true);
   const [isFavoritesOpen, { toggle: toggleFavorites }] = useBoolean(true);
@@ -54,27 +56,22 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   let location = useLocation();
   const { pathname } = location;
 
-  // Extracting parameters from pathname
   const params = pathname.split("/");
-
-  // Extracting parameter values from params array
-  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+  const roomId = params[params.length - 1];
 
   const handleClose = (
-    event: React.SyntheticEvent | Event,
-    reason?: string,
+      event: React.SyntheticEvent | Event,
+      reason?: string,
   ) => {
     if (reason === "clickaway") {
       return;
     }
-
     setOpen(false);
   };
 
   useEffect(() => {
     if (loadingUserRooms || !userRoomsSnapshot?.size) return;
 
-    // Fetch room details based on userRoomsSnapshot
     const fetchRoomDetails = async () => {
       const roomsMap = new Map<string, Room>();
 
@@ -101,8 +98,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       title: roomsData.get(roomId)?.roomTitle || "Unnamed Room",
       linkToData: roomsData.get(roomId)?.additionalDataLink,
       favorite: userRoomsSnapshot?.docs
-        .find((doc) => (doc.data() as GroupMember).roomId === roomId)
-        ?.data().isFavorite,
+          .find((doc) => (doc.data() as GroupMember).roomId === roomId)
+          ?.data().isFavorite,
       onlineMeetingUrl: roomsData.get(roomId)?.meetingUrl,
     };
   };
@@ -128,143 +125,157 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     navigate("/");
   };
 
+  const [contactOpen, setContactOpen] = useState(false); // State for Contact Us modal
+
   return (
-    <>
-      <SidebarContainer className="bg-sidebar-color grow shrink-0">
-        {errorUserRooms && (
-          <AlertWrapper>
-            <Alert variant="filled" severity="error">
-              <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
-                Error occurred
-              </AlertTitle>
-              <p>Something went wrong, please check if all is right!</p>
-            </Alert>
-          </AlertWrapper>
-        )}
-        {loadingUserRooms && (
-          <AlertWrapper>
-            <Alert variant="filled" severity="info">
-              <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
-                Loading...
-              </AlertTitle>
+      <>
+        <SidebarContainer className="bg-sidebar-color grow shrink-0">
+          {errorUserRooms && (
+              <AlertWrapper>
+                <Alert variant="filled" severity="error">
+                  <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
+                    Error occurred
+                  </AlertTitle>
+                  <p>Something went wrong, please check if all is right!</p>
+                </Alert>
+              </AlertWrapper>
+          )}
+          {loadingUserRooms && (
+              <AlertWrapper>
+                <Alert variant="filled" severity="info">
+                  <AlertTitle sx={{ fontSize: "14px", fontWeight: 700 }}>
+                    Loading...
+                  </AlertTitle>
+                  <p>
+                    Just wait a second, we need to load something for your comfort
+                  </p>
+                </Alert>
+              </AlertWrapper>
+          )}
+          <SidebarTop>
+            <SidebarInfo>
               <p>
-                Just wait a second, we need to load something for your comfort
+                <FiberManualRecordIcon
+                    sx={{ fontSize: "16px", color: "green" }}
+                />
+                {user.displayName}
               </p>
-            </Alert>
-          </AlertWrapper>
+            </SidebarInfo>
+          </SidebarTop>
+
+          <SidebarOptionList>
+            <OptionContainer
+                Icon={AddCircle}
+                title={"Join To Group"}
+                onClick={() => setGroupSearchModalOpen(true)}
+            />
+          </SidebarOptionList>
+
+          <SidebarOptionList>
+            <OptionContainer
+                Icon={MessageIcon}
+                title={"Add New Group"}
+                onClick={() => setNewRoomModalOpen(true)}
+            />
+          </SidebarOptionList>
+
+          <SidebarOptionList>
+            <OptionContainer
+                onClick={toggleRooms}
+                Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+                title={"Your Rooms"}
+            />
+            {isRoomsOpen &&
+                userRoomsSnapshot?.docs
+                    .filter((data) => {
+                      const memberData = data.data() as GroupMember;
+                      return isString(memberData.roomId);
+                    })
+                    .map((memberDoc) => {
+                      const memberData = memberDoc.data() as GroupMember;
+                      const roomData = roomsData.get(memberData.roomId);
+                      return (
+                          <SidebarOption
+                              key={memberData?.roomId}
+                              id={memberData?.roomId}
+                              Icon={TagIcon}
+                              title={roomData?.roomTitle || "Unnamed Room"}
+                              isChannel={true}
+                              selectChannel={() => selectChannel(memberData.roomId)}
+                          />
+                      );
+                    })}
+          </SidebarOptionList>
+
+          <SidebarOptionList>
+            <OptionContainer
+                RightIcon={StarBorderIcon}
+                onClick={toggleFavorites}
+                Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
+                title={"Favorites"}
+            />
+            {isFavoritesOpen &&
+                userRoomsSnapshot?.docs
+                    .filter((doc) => (doc.data() as GroupMember).isFavorite)
+                    .map((favDoc) => {
+                      const favData = favDoc.data() as GroupMember;
+                      const roomData = roomsData.get(favData.roomId);
+
+                      return (
+                          <SidebarOption
+                              key={favData?.roomId}
+                              id={favData?.roomId}
+                              Icon={TagIcon}
+                              title={roomData?.roomTitle || "Unnamed Favorite"}
+                              isChannel={true}
+                              selectChannel={() => selectChannel(favData.roomId)}
+                          />
+                      );
+                    })}
+          </SidebarOptionList>
+
+          <SidebarOptionList>
+            <OptionContainer
+                Icon={LogoutIcon}
+                title={"Logout"}
+                onClick={handleLogout}
+            />
+          </SidebarOptionList>
+
+          <SidebarOptionList>
+            <OptionContainer
+                Icon={ContactMailIcon} // Add Contact Us option
+                title={"Contact Us"}
+                onClick={() => setContactOpen(true)} // Open the modal
+            />
+          </SidebarOptionList>
+        </SidebarContainer>
+
+        <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+          <Alert
+              onClose={handleClose}
+              severity="success"
+              variant="filled"
+              sx={{ width: "100%" }}
+          >
+            Room selected successfully!
+          </Alert>
+        </Snackbar>
+
+        {newRoomModalOpen && (
+            <CreateGroupFormModal
+                open={newRoomModalOpen}
+                setOpen={setNewRoomModalOpen}
+            />
         )}
-        <SidebarTop>
-          <SidebarInfo>
-            <p>
-              <FiberManualRecordIcon
-                sx={{ fontSize: "16px", color: "green" }}
-              />
-              {user.displayName}
-            </p>
-          </SidebarInfo>
-        </SidebarTop>
-
-        <SidebarOptionList>
-          <OptionContainer
-            Icon={AddCircle}
-            title={"Join To Group"}
-            onClick={() => setGroupSearchModalOpen(true)}
-          />
-        </SidebarOptionList>
-
-        <SidebarOptionList>
-          <OptionContainer
-            Icon={MessageIcon}
-            title={"Add New Group"}
-            onClick={() => setNewRoomModalOpen(true)}
-          />
-        </SidebarOptionList>
-
-        <SidebarOptionList>
-          <OptionContainer
-            onClick={toggleRooms}
-            Icon={isRoomsOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
-            title={"Your Rooms"}
-          />
-          {isRoomsOpen &&
-            userRoomsSnapshot?.docs
-              .filter((data) => {
-                const memberData = data.data() as GroupMember;
-                return isString(memberData.roomId);
-              })
-              .map((memberDoc) => {
-                const memberData = memberDoc.data() as GroupMember;
-                const roomData = roomsData.get(memberData.roomId);
-                return (
-                  <SidebarOption
-                    key={memberData?.roomId}
-                    id={memberData?.roomId}
-                    Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Room"}
-                    isChannel={true}
-                    selectChannel={() => selectChannel(memberData.roomId)}
-                  />
-                );
-              })}
-        </SidebarOptionList>
-
-        <SidebarOptionList>
-          <OptionContainer
-            RightIcon={StarBorderIcon}
-            onClick={toggleFavorites}
-            Icon={isFavoritesOpen ? KeyboardArrowDownIcon : KeyboardArrowUpIcon}
-            title={"Favorites"}
-          />
-          {isFavoritesOpen &&
-            userRoomsSnapshot?.docs
-              .filter((doc) => (doc.data() as GroupMember).isFavorite)
-              .map((favDoc) => {
-                const favData = favDoc.data() as GroupMember;
-                const roomData = roomsData.get(favData.roomId);
-
-                return (
-                  <SidebarOption
-                    key={favData?.roomId}
-                    id={favData?.roomId}
-                    Icon={TagIcon}
-                    title={roomData?.roomTitle || "Unnamed Favorite"}
-                    isChannel={true}
-                    selectChannel={() => selectChannel(favData.roomId)}
-                  />
-                );
-              })}
-        </SidebarOptionList>
-        <SidebarOptionList>
-          <OptionContainer
-            Icon={LogoutIcon}
-            title={"Logout"}
-            onClick={handleLogout}
-          />
-        </SidebarOptionList>
-      </SidebarContainer>
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          Room selected successfully!
-        </Alert>
-      </Snackbar>
-      {newRoomModalOpen && (
-        <CreateGroupFormModal
-          open={newRoomModalOpen}
-          setOpen={setNewRoomModalOpen}
-        />
-      )}
-      {groupSearchModalOpen && (
-        <GroupSearchModal
-          open={groupSearchModalOpen}
-          setOpen={setGroupSearchModalOpen}
-        />
-      )}
-    </>
+        {groupSearchModalOpen && (
+            <GroupSearchModal
+                open={groupSearchModalOpen}
+                setOpen={setGroupSearchModalOpen}
+            />
+        )}
+        <ContactUsModal open={contactOpen} setOpen={setContactOpen} /> {/* Contact Us Modal */}
+      </>
   );
 };
 
