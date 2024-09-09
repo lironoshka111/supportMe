@@ -134,6 +134,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     navigate("/");
   };
 
+  // const countMessages = ()
+
   return (
     <>
       <SidebarContainer className="bg-sidebar-color grow shrink-0">
