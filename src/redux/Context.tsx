@@ -19,6 +19,8 @@ interface ContextProps {
   setNewRoomModalOpen: (open: boolean) => void;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (open: boolean) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
 }
 
 const AppContext = createContext<ContextProps | undefined>(undefined);
@@ -26,6 +28,7 @@ const AppContext = createContext<ContextProps | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedRoom, setSelectedRoomState] =
     useState<SelectedRoomType | null>(null);
   const [newRoomModalOpen, setNewRoomModalOpen] = useState(false);
@@ -45,6 +48,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
   return (
     <AppContext.Provider
       value={{
+        isLoading,
+        setIsLoading,
         selectedRoom,
         setSelectedRoom,
         setFavorite,

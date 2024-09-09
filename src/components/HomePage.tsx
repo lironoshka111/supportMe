@@ -4,6 +4,11 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Grid,
   IconButton,
   Paper,
@@ -16,6 +21,7 @@ import { auth, db } from "../firebase";
 import { Room } from "../types/models";
 import { useAppContext } from "../redux/Context";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CartesianGrid,
   Line,
@@ -27,11 +33,12 @@ import {
 } from "recharts";
 import CreateGroupFormModal from "./Modals/CreateGroupFormModal";
 import dayjs from "dayjs";
+import { toast } from "react-toastify";
+import { deleteRoom } from "./utilities/firebaseUtils";
 
 // Lazy load the AboutPage component
 const AboutPage = lazy(() => import("../components/AboutPage"));
 
-// Analytics Data Interface
 interface AnalyticsData {
   name: string;
   messagesPerDay: { date: string; count: number }[];
@@ -42,14 +49,16 @@ type RoomWithId = Room & { id: string };
 const HomePage: React.FC = () => {
   const [user] = useAuthState(auth);
   const [adminChannels, setAdminChannels] = useState<RoomWithId[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<RoomWithId | null>(null); // Stores the group to edit
-  const [isModalOpen, setIsModalOpen] = useState(false); // Manages the modal state
-  const [showAboutPage, setShowAboutPage] = useState(false); // Manage About Page visibility
+  const [selectedGroup, setSelectedGroup] = useState<RoomWithId | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAboutPage, setShowAboutPage] = useState(false);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
-  const { setNewRoomModalOpen, setGroupSearchModalOpen } = useAppContext();
+  const { setNewRoomModalOpen, setGroupSearchModalOpen, setSelectedRoom } =
+    useAppContext();
   const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false); // For delete dialog
+  const [roomToDelete, setRoomToDelete] = useState<string | null>(null); // Room to be deleted
 
-  // Fetch channels where the user is an admin
   useEffect(() => {
     const fetchAdminChannels = async () => {
       if (!user) return;
@@ -73,7 +82,6 @@ const HomePage: React.FC = () => {
     fetchAdminChannels();
   }, [user]);
 
-  // Fetch messages and aggregate them per day
   const fetchMessagesForRooms = async (rooms: RoomWithId[]) => {
     const analytics: AnalyticsData[] = [];
 
@@ -106,27 +114,54 @@ const HomePage: React.FC = () => {
     setAnalyticsData(analytics);
   };
 
+  const handleDeleteRoom = async () => {
+    if (!roomToDelete) return;
+
+    try {
+      await deleteRoom(roomToDelete);
+
+      setAdminChannels((prevChannels) =>
+        prevChannels.filter((channel) => channel.id !== roomToDelete),
+      );
+      setRoomToDelete(null);
+      setDeleteDialogOpen(false);
+      toast.success("Room deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete the room. Please try again.");
+    }
+  };
+
   const handleNavigateToChannel = (roomId: string) => {
     navigate(`/room/${roomId}`);
   };
 
-  // Trigger the modal to edit a group
   const handleEditGroup = (group: RoomWithId) => {
-    setSelectedGroup(group); // Set the group to be edited
-    setIsModalOpen(true); // Open the modal
+    setSelectedGroup(group);
+    setIsModalOpen(true);
   };
 
-  // Toggle About Page visibility
   const handleShowAboutPage = () => {
     setShowAboutPage(!showAboutPage);
   };
 
-  console.log("HomePage rendered", { adminChannels, analyticsData });
+  const handleOpenDeleteDialog = (roomId: string) => {
+    setRoomToDelete(roomId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setRoomToDelete(null);
+  };
+
+  const findMessagePerDay = (roomTitle: string) => {
+    return (
+      analyticsData.find((a) => a.name === roomTitle)?.messagesPerDay || []
+    );
+  };
 
   return (
     <Box className="flex flex-col grow-0">
-      {" "}
-      {/* Ensure the box takes full height */}
       {/* Header */}
       <Box className="flex flex-col items-center justify-center gap-2 mb-4">
         <img
@@ -143,6 +178,7 @@ const HomePage: React.FC = () => {
           Dashboard
         </Typography>
       </Box>
+
       {/* User Panel - Quick Actions */}
       <Box className="flex justify-center gap-4 my-10">
         <Button
@@ -163,6 +199,7 @@ const HomePage: React.FC = () => {
           About
         </Button>
       </Box>
+
       {/* Managed Channels Section */}
       <Box className="mt-8 flex-grow">
         <Typography
@@ -195,39 +232,57 @@ const HomePage: React.FC = () => {
                       {channel.description}
                     </Typography>
 
-                    {/* Channel Analytics Graph */}
-                    <Box className="h-40">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={
-                            analyticsData.find(
-                              (a) => a.name === channel.roomTitle,
-                            )?.messagesPerDay || []
-                          }
+                    <div className="h-40 flex w-full justify-center mt-5">
+                      {findMessagePerDay(channel.roomTitle) &&
+                      findMessagePerDay(channel.roomTitle).length === 0 ? (
+                        <Typography variant="h6" className="text-gray-500">
+                          No messages sent yet
+                        </Typography>
+                      ) : (
+                        <ResponsiveContainer
+                          width="100%"
+                          height="100%"
+                          className="flex justify-center items-center w-full"
                         >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis />
-                          <Tooltip />
-                          <Line
-                            type="monotone"
-                            dataKey="count"
-                            stroke="#8884d8"
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </Box>
+                          <LineChart
+                            data={findMessagePerDay(channel.roomTitle)}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="date" />
+                            <YAxis />
+                            <Tooltip />
+                            <Line
+                              type="monotone"
+                              dataKey="count"
+                              stroke="#8884d8"
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                    <div className="flex w-full justify-between">
+                      {/* Edit button */}
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleEditGroup(channel)}
+                        aria-label="edit"
+                        size="small"
+                        sx={{ mb: 2 }}
+                      >
+                        <EditIcon fontSize="small" /> Edit
+                      </IconButton>
 
-                    {/* Edit button */}
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEditGroup(channel)}
-                      aria-label="edit"
-                      size="small"
-                      sx={{ mb: 2 }}
-                    >
-                      <EditIcon fontSize="small" /> Edit
-                    </IconButton>
+                      {/* Delete button */}
+                      <IconButton
+                        color="secondary"
+                        onClick={() => handleOpenDeleteDialog(channel.id)}
+                        aria-label="delete"
+                        size="small"
+                        sx={{ mb: 2 }}
+                      >
+                        <DeleteIcon fontSize="small" /> Delete
+                      </IconButton>
+                    </div>
 
                     {/* Manage button */}
                     <Button
@@ -246,6 +301,7 @@ const HomePage: React.FC = () => {
           </Grid>
         )}
       </Box>
+
       {/* Edit Group Modal */}
       {isModalOpen && (
         <CreateGroupFormModal
@@ -254,6 +310,7 @@ const HomePage: React.FC = () => {
           groupData={selectedGroup} // Pass the selected group for editing
         />
       )}
+
       {/* About Page Section */}
       {showAboutPage && (
         <Box className="mt-10">
@@ -262,6 +319,30 @@ const HomePage: React.FC = () => {
           </Suspense>
         </Box>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Delete Room"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this room? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteRoom} color="secondary" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
