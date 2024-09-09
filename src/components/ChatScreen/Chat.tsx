@@ -33,17 +33,21 @@ const Chat: React.FC<ChatProps> = () => {
   const [lastViewed, setLastViewed] = useState<Date | null>(null);
 
   const messagesQuery = selectedRoom
-      ? query(
-          collection(doc(collection(db, "rooms"), selectedRoom.id), "messages"),
-          orderBy("timestamp")
+    ? query(
+        collection(doc(collection(db, "rooms"), selectedRoom.id), "messages"),
+        orderBy("timestamp"),
       )
-      : null;
+    : null;
 
   const [messages] = useCollection(messagesQuery);
 
   useEffect(() => {
     if (user && selectedRoom) {
-      const userRoomRef = doc(db, "groupMembers", `${user.uid}_${selectedRoom.id}`);
+      const userRoomRef = doc(
+        db,
+        "groupMembers",
+        `${user.uid}_${selectedRoom.id}`,
+      );
       const fetchLastViewed = async () => {
         const docSnap = await getDoc(userRoomRef);
         if (docSnap.exists()) {
@@ -55,9 +59,9 @@ const Chat: React.FC<ChatProps> = () => {
 
         // Update the last viewed time to the current time when entering the room
         await setDoc(
-            userRoomRef,
-            { lastViewed: new Date(), roomId: selectedRoom.id, userId: user.uid },
-            { merge: true }
+          userRoomRef,
+          { lastViewed: new Date(), roomId: selectedRoom.id, userId: user.uid },
+          { merge: true },
         );
       };
       fetchLastViewed();
@@ -71,12 +75,14 @@ const Chat: React.FC<ChatProps> = () => {
 
       if (lastViewed) {
         firstUnreadMessage = messages.docs.find(
-            (doc) => doc.data().timestamp.toDate() > lastViewed
+          (doc) => doc.data().timestamp.toDate() > lastViewed,
         );
       }
 
       if (firstUnreadMessage) {
-        const unreadMessageElement = document.getElementById(firstUnreadMessage.id);
+        const unreadMessageElement = document.getElementById(
+          firstUnreadMessage.id,
+        );
         if (unreadMessageElement) {
           unreadMessageElement.scrollIntoView({ behavior: "smooth" });
         }
@@ -91,9 +97,9 @@ const Chat: React.FC<ChatProps> = () => {
     setFavorite(active);
     const groupMembersRef = collection(db, "groupMembers");
     const q = query(
-        groupMembersRef,
-        where("roomId", "==", selectedRoom?.id),
-        where("userId", "==", user?.uid)
+      groupMembersRef,
+      where("roomId", "==", selectedRoom?.id),
+      where("userId", "==", user?.uid),
     );
 
     const querySnapshot = await getDocs(q);
@@ -120,54 +126,54 @@ const Chat: React.FC<ChatProps> = () => {
   };
 
   return (
-      <div className="flex flex-col px-5 h-full flex-grow">
-        <div className="flex items-center justify-between border-b border-gray-300">
-          <div className="flex items-center">
-            <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
+    <div className="flex flex-col px-5 h-full flex-grow">
+      <div className="flex items-center justify-between border-b border-gray-300">
+        <div className="flex items-center">
+          <h4 className="text-lg font-medium">#{selectedRoom?.title}</h4>
+          <IconButton
+            color={selectedRoom?.favorite ? "warning" : undefined}
+            onClick={() => toggleFavorite()}
+          >
+            <StarBorderIcon />
+          </IconButton>
+        </div>
+        <div className="flex gap-2 items-center justify-end">
+          <Tooltip title="Group members" arrow>
             <IconButton
-                color={selectedRoom?.favorite ? "warning" : undefined}
-                onClick={() => toggleFavorite()}
+              onClick={() => {
+                navigate(`/room/${selectedRoom?.id}/members`);
+              }}
             >
-              <StarBorderIcon />
+              <PeopleIcon />
             </IconButton>
-          </div>
-          <div className="flex gap-2 items-center justify-end">
-            <Tooltip title="Group members" arrow>
-              <IconButton
-                  onClick={() => {
-                    navigate(`/room/${selectedRoom?.id}/members`);
-                  }}
-              >
-                <PeopleIcon />
-              </IconButton>
-            </Tooltip>
+          </Tooltip>
 
-            <Tooltip title="Details" arrow>
-              <IconButton
-                  onClick={() => {
-                    if (selectedRoom?.linkToData) {
-                      window.open(selectedRoom.linkToData);
-                    }
-                  }}
-              >
-                <HelpOutlineIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
+          <Tooltip title="Details" arrow>
+            <IconButton
+              onClick={() => {
+                if (selectedRoom?.linkToData) {
+                  window.open(selectedRoom.linkToData);
+                }
+              }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
+          </Tooltip>
         </div>
-        <div
-            aria-label="message container"
-            tabIndex={0}
-            className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
-            ref={containerRef}
-        >
-          {messages?.docs.map((doc) => (
-              <Message key={doc.id} {...(doc.data() as MessageProps)} id={doc.id} />
-          ))}
-          <div ref={divRef}></div>
-        </div>
-        {selectedRoom?.id && <ChatInput />}
       </div>
+      <div
+        aria-label="message container"
+        tabIndex={0}
+        className="flex flex-col p-2.5 flex-1 gap-2 overflow-y-auto scrollbar-hide"
+        ref={containerRef}
+      >
+        {messages?.docs.map((doc) => (
+          <Message key={doc.id} {...(doc.data() as MessageProps)} id={doc.id} />
+        ))}
+        <div ref={divRef}></div>
+      </div>
+      {selectedRoom?.id && <ChatInput />}
+    </div>
   );
 };
 
