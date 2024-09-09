@@ -57,7 +57,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   } = useAppContext();
   const navigate = useNavigate();
   let location = useLocation();
-  //const { roomId } = useParams<{ roomId: string }>(); // Get the roomId from the URL params
   const { pathname } = location;
 
   // Extracting parameters from pathname
@@ -138,7 +137,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     if (roomId && roomsData.has(roomId)) {
       selectedRoom?.id !== roomId && selectChannel(roomId);
     } else {
-      debugger;
       navigate("/");
       setSelectedRoom(null);
     }
