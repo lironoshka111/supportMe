@@ -11,7 +11,7 @@ const Login = () => {
 
   const login = async () => {
     if (!isAgreed) {
-      alert("You must agree to the cookie policy before logging in.");
+      alert("You must agree to the privacy policy before logging in.");
       return;
     }
 
@@ -49,7 +49,7 @@ const Login = () => {
             <span>
               I have read and agree to the{" "}
               <Link
-                href="https://heyzine.com/flip-book/8a1e43a86b.html"
+                href="https://heyzine.com/flip-book/c08d6d9c07.html"
                 target="_blank"
                 rel="noopener noreferrer"
               >
