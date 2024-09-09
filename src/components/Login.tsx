@@ -50,25 +50,23 @@ const Login = () => {
         {/* Checkbox for Privacy Policy Agreement */}
         <FormControlLabel
           control={
-            <Checkbox
+            <StyledCheckbox
               checked={isAgreed}
               onChange={(e) => setIsAgreed(e.target.checked)}
             />
           }
           label={
-            <div className="flex gap-1 pl-2">
-              <div> I have read and agree to the</div>
-              <span>
-                <Link
-                  href="https://heyzine.com/flip-book/85709381d7.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  privacy and cookies policy
-                </Link>
-                .
-              </span>
-            </div>
+            <StyledLabel>
+              <span>I have read and agree to the</span>
+              <Link
+                href="https://heyzine.com/flip-book/85709381d7.html"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                privacy and cookies policy
+              </Link>
+              .
+            </StyledLabel>
           }
         />
 
@@ -101,6 +99,29 @@ const Login = () => {
 
 export default Login;
 
+// Styled components for Checkbox and Label
+const StyledCheckbox = styled(Checkbox)`
+  color: ${colors.primary.teal};
+  &.Mui-checked {
+    color: ${colors.primary.teal};
+  }
+`;
+
+const StyledLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  a {
+    color: ${colors.primary.teal};
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+`;
+
+// Container styling remains the same
 export const LoginContainer = styled.div`
   display: flex;
   flex-direction: column;
