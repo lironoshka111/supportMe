@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
-import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ForumIcon from "@mui/icons-material/Forum";
+import MessageIcon from "@mui/icons-material/Message";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { collection, doc, getDoc, query, where } from "firebase/firestore";
 import { auth, db } from "../../firebase";
