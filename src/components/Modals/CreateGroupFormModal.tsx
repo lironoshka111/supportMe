@@ -435,14 +435,7 @@ const CreateGroupFormModal: React.FC<GroupFormModalProps> = ({
 
           <Grid item xs={12}>
             <TextField
-              InputProps={{
-                inputProps: {
-                  style: {
-                    maxHeight: "100px",
-                    overflowY: "auto", // Enable vertical scrolling when content overflows
-                  },
-                },
-              }}
+              rows={5}
               multiline
               fullWidth
               label="Group Rules"
