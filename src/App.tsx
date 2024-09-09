@@ -78,20 +78,10 @@ const AppBody = styled.div`
 `;
 
 const MainContent = styled.div`
-  flex-grow: 1;
-  //background-color: #ffffff;
+  min-width: 0;
   padding: 20px;
+  flex-grow: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 `;
-
-// const HomePage = styled.div`
-//   display: flex;
-//   justify-content: center;
-//   align-items: center;
-//   flex-direction: column;
-//   height: 100%;
-//   h3 {
-//     font-size: 24px;
-//     font-weight: 500;
-//   }
-// `;

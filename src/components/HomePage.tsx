@@ -5,8 +5,17 @@ import {
   Card,
   CardContent,
   Grid,
+  IconButton,
+  Paper,
   Typography,
 } from "@mui/material";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
+import { Room } from "../types/models";
+import { useAppContext } from "../redux/Context";
+import EditIcon from "@mui/icons-material/Edit";
 import {
   CartesianGrid,
   Line,
@@ -16,12 +25,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase";
-import { Room } from "../types/models";
-import { useAppContext } from "../redux/Context";
+import CreateGroupFormModal from "./Modals/CreateGroupFormModal";
 
 // Lazy load the AboutPage component
 const AboutPage = lazy(() => import("../components/AboutPage"));
@@ -38,9 +42,11 @@ type RoomWithId = Room & { id: string };
 const HomePage: React.FC = () => {
   const [user] = useAuthState(auth);
   const [adminChannels, setAdminChannels] = useState<RoomWithId[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<RoomWithId | null>(null); // Stores the group to edit
+  const [isModalOpen, setIsModalOpen] = useState(false); // Manages the modal state
+  const [showAboutPage, setShowAboutPage] = useState(false); // Manage About Page visibility
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
   const { setNewRoomModalOpen, setGroupSearchModalOpen } = useAppContext();
-  const [showAboutPage, setShowAboutPage] = useState(false);
   const navigate = useNavigate();
 
   // Fetch channels where the user is an admin
@@ -77,22 +83,37 @@ const HomePage: React.FC = () => {
     navigate(`/room/${roomId}`);
   };
 
+  // Trigger the modal to edit a group
+  const handleEditGroup = (group: RoomWithId) => {
+    setSelectedGroup(group); // Set the group to be edited
+    setIsModalOpen(true); // Open the modal
+  };
+
+  // Toggle About Page visibility
   const handleShowAboutPage = () => {
-    setShowAboutPage(true);
+    setShowAboutPage(!showAboutPage);
   };
 
   return (
-    <Box className="p-6">
+    <Box className="flex flex-col grow-0">
+      {" "}
+      {/* Ensure the box takes full height */}
       {/* Header */}
-      <Typography
-        variant="h4"
-        align="center"
-        gutterBottom
-        className="font-bold"
-      >
-        Dashboard
-      </Typography>
-
+      <Box className="flex flex-col items-center justify-center gap-2 mb-4">
+        <img
+          src={"/images/logo.png"}
+          alt="Support Logo"
+          className="h-[50vh] w-[50vh] rounded-full"
+        />
+        <Typography
+          variant="h4"
+          align="center"
+          gutterBottom
+          className="font-bold"
+        >
+          Dashboard
+        </Typography>
+      </Box>
       {/* User Panel - Quick Actions */}
       <Box className="flex justify-center gap-4 my-10">
         <Button
@@ -109,37 +130,12 @@ const HomePage: React.FC = () => {
         >
           Join a Channel
         </Button>
+        <Button variant="contained" color="info" onClick={handleShowAboutPage}>
+          About
+        </Button>
       </Box>
-
-      {/* Overall Analytics Section */}
-      <Box className="mt-6">
-        <Typography
-          variant="h5"
-          align="center"
-          gutterBottom
-          className="font-semibold"
-        >
-          Overall Channel Analytics
-        </Typography>
-        <Box className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={analyticsData}
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="messages" stroke="#8884d8" />
-              <Line type="monotone" dataKey="participants" stroke="#82ca9d" />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Box>
-
-      {/* Admin Channels Section */}
-      <Box className="mt-8">
+      {/* Managed Channels Section */}
+      <Box className="mt-8 flex-grow">
         <Typography
           variant="h5"
           align="center"
@@ -148,72 +144,100 @@ const HomePage: React.FC = () => {
         >
           Managed Channels
         </Typography>
-        <Grid container spacing={3}>
-          {adminChannels.map((channel: RoomWithId) => (
-            <Grid item xs={12} sm={6} md={4} key={channel.id}>
-              <Card className="shadow-lg">
-                <CardContent className="p-4">
-                  {/* Display Image for the Channel */}
-                  <Typography variant="h6" className="font-semibold">
-                    {channel.roomTitle}
-                  </Typography>
-                  <Typography className="text-gray-600 mb-4">
-                    {channel.description}
-                  </Typography>
 
-                  {/* Graph for each room */}
-                  <Box className="h-40">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={[
-                          {
-                            name: "Messages",
-                            value: Math.floor(Math.random() * 100), // Placeholder
-                          },
-                          {
-                            name: "Participants",
-                            value: channel.maxMembers || 0,
-                          },
-                        ]}
-                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line
-                          type="monotone"
-                          dataKey="value"
-                          stroke="#8884d8"
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </Box>
+        {/* Empty state when there are no managed channels */}
+        {adminChannels.length === 0 ? (
+          <Paper elevation={3} className="p-6 text-center">
+            <Typography variant="h6">You have no managed channels</Typography>
+            <Typography className="text-gray-500">
+              Create or join a channel to get started.
+            </Typography>
+          </Paper>
+        ) : (
+          <Grid container spacing={3}>
+            {adminChannels.map((channel: RoomWithId) => (
+              <Grid item xs={12} sm={6} md={4} key={channel.id}>
+                <Card className="shadow-lg">
+                  <CardContent className="p-4">
+                    <Typography variant="h6" className="font-semibold">
+                      {channel.roomTitle}
+                    </Typography>
+                    <Typography className="text-gray-600 mb-4">
+                      {channel.description}
+                    </Typography>
 
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => handleNavigateToChannel(channel.id)}
-                    className="mt-4"
-                  >
-                    Manage Channel
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                    {/* Channel Analytics Graph */}
+                    <Box className="h-40">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={[
+                            {
+                              name: "Messages",
+                              value: Math.floor(Math.random() * 100),
+                            }, // Mock data
+                            {
+                              name: "Participants",
+                              value: channel.maxMembers || 0,
+                            },
+                          ]}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Line
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#8884d8"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </Box>
+
+                    {/* Edit button */}
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEditGroup(channel)}
+                      aria-label="edit"
+                      size="small"
+                      sx={{ mb: 2 }}
+                    >
+                      <EditIcon fontSize="small" /> Edit
+                    </IconButton>
+
+                    {/* Manage button */}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={() => handleNavigateToChannel(channel.id)}
+                      className="mt-4"
+                    >
+                      Manage Channel
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Box>
-
-      {/* Load About Page */}
-
-      <Box className="mt-10">
-        <Suspense fallback={<div>Loading About Page...</div>}>
-          <AboutPage />
-        </Suspense>
-      </Box>
+      {/* Edit Group Modal */}
+      {isModalOpen && (
+        <CreateGroupFormModal
+          open={isModalOpen}
+          setOpen={setIsModalOpen}
+          groupData={selectedGroup} // Pass the selected group for editing
+        />
+      )}
+      {/* About Page Section */}
+      {showAboutPage && (
+        <Box className="mt-10">
+          <Suspense fallback={<div>Loading About Page...</div>}>
+            <AboutPage />
+          </Suspense>
+        </Box>
+      )}
     </Box>
   );
 };

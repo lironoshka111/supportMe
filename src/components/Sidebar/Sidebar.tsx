@@ -130,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
 
   return (
     <>
-      <SidebarContainer className="bg-sidebar-color">
+      <SidebarContainer className="bg-sidebar-color grow shrink-0">
         {errorUserRooms && (
           <AlertWrapper>
             <Alert variant="filled" severity="error">
@@ -274,6 +274,7 @@ const SidebarContainer = styled.div`
   width: 260px;
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
   height: 100%;
   overflow-y: auto;
   resize: horizontal;
