@@ -7,9 +7,9 @@ import {
   getDocs,
   orderBy,
   query,
+  setDoc,
   updateDoc,
   where,
-  setDoc,
 } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -24,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../../redux/Context";
 
 interface ChatProps {}
+
 const Chat: React.FC<ChatProps> = () => {
   const [user] = useAuthState(auth);
   const divRef = useRef<HTMLDivElement | null>(null);
@@ -57,7 +58,6 @@ const Chat: React.FC<ChatProps> = () => {
           }
         }
 
-        // Update the last viewed time to the current time when entering the room
         await setDoc(
           userRoomRef,
           { lastViewed: new Date(), roomId: selectedRoom.id, userId: user.uid },
@@ -70,7 +70,6 @@ const Chat: React.FC<ChatProps> = () => {
 
   useEffect(() => {
     if (messages && containerRef.current) {
-      // If no unread messages, scroll to bottom
       let firstUnreadMessage = null;
 
       if (lastViewed) {
@@ -87,11 +86,22 @@ const Chat: React.FC<ChatProps> = () => {
           unreadMessageElement.scrollIntoView({ behavior: "smooth" });
         }
       } else {
-        // Scroll to the latest message if no unread messages
         divRef.current?.scrollIntoView({ behavior: "smooth" });
       }
     }
   }, [messages, lastViewed]);
+
+  const handleNewMessage = async () => {
+    if (user && selectedRoom) {
+      const userRoomRef = doc(
+        db,
+        "groupMembers",
+        `${user.uid}_${selectedRoom.id}`,
+      );
+
+      await setDoc(userRoomRef, { lastViewed: new Date() }, { merge: true });
+    }
+  };
 
   const toggleFavorite = async (active = !selectedRoom?.favorite) => {
     setFavorite(active);
@@ -105,14 +115,12 @@ const Chat: React.FC<ChatProps> = () => {
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-      // Add a new document if it doesn't exist
       await addDoc(groupMembersRef, {
         roomId: selectedRoom?.id,
         userId: user?.uid,
         isFavorite: active,
       });
     } else {
-      // Get the first document from the query snapshot
       const document = querySnapshot.docs[0];
       const docRef = doc(db, "groupMembers", document.id);
       const docSnapshot = await getDoc(docRef);
@@ -172,7 +180,7 @@ const Chat: React.FC<ChatProps> = () => {
         ))}
         <div ref={divRef}></div>
       </div>
-      {selectedRoom?.id && <ChatInput />}
+      {selectedRoom?.id && <ChatInput onMessageSent={handleNewMessage} />}
     </div>
   );
 };

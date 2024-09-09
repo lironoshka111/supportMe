@@ -15,11 +15,13 @@ import { toast } from "react-toastify";
 import { analyzeMessage } from "../../utils/analyzeMessage";
 import { useAppContext } from "../../redux/Context";
 
-interface ChatInputProps {}
+interface ChatInputProps {
+  onMessageSent: () => void; // Add this prop
+}
 
-const ChatInput: React.FC<ChatInputProps> = () => {
+const ChatInput: React.FC<ChatInputProps> = ({ onMessageSent }) => {
   const [user] = useAuthState(auth);
-  const { selectedRoom } = useAppContext(); // Assuming currentUser is in the redux state
+  const { selectedRoom } = useAppContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [messageValue, setMessageValue] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
@@ -55,6 +57,9 @@ const ChatInput: React.FC<ChatInputProps> = () => {
         timestamp: Timestamp.now(),
         userId: user?.uid,
       });
+
+      // Call the onMessageSent function to update lastViewed and scroll
+      onMessageSent();
     }
   };
 
@@ -87,7 +92,7 @@ const ChatInput: React.FC<ChatInputProps> = () => {
           inputProps={{ "aria-label": "message input" }}
           autoFocus
           multiline
-          onKeyDown={handleKeyDown} // Handle Enter key press
+          onKeyDown={handleKeyDown}
         />
         <Divider className="h-7 mx-0.5" orientation="vertical" />
         <Tooltip title={"Send"} arrow>
