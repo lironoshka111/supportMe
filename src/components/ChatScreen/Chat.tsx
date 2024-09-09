@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { collection, doc, orderBy, query } from "firebase/firestore";
 import ChatInput from "./ChatInput";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import PeopleIcon from "@mui/icons-material/People";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import InfoIcon from "@mui/icons-material/Info";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { auth, db } from "../../firebase";
 import Message from "./Message";
@@ -42,7 +42,6 @@ const Chat: React.FC<ChatProps> = () => {
 
   useEffect(() => {
     if (containerRef.current) {
-      debugger;
       if (lastSeen) {
         messages?.docs.find((doc) => {
           if (doc.get("timestamp").toDate() > lastSeen) {
@@ -82,17 +81,17 @@ const Chat: React.FC<ChatProps> = () => {
           </IconButton>
         </div>
         <div className="flex gap-2 items-center justify-end">
-          <Tooltip title="Group members" arrow>
+          <Tooltip title="Group info" arrow>
             <IconButton
               onClick={() => {
-                navigate(`/room/${selectedRoom?.id}/members`);
+                navigate(`/room/${selectedRoom?.id}/info`);
               }}
             >
-              <PeopleIcon />
+              <InfoIcon />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Details" arrow>
+          <Tooltip title="Medical Info" arrow>
             <IconButton
               onClick={() => {
                 if (selectedRoom?.linkToData) {

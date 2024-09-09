@@ -57,13 +57,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
   } = useAppContext();
   const navigate = useNavigate();
   let location = useLocation();
+  //const { roomId } = useParams<{ roomId: string }>(); // Get the roomId from the URL params
   const { pathname } = location;
 
   // Extracting parameters from pathname
-  const params = pathname.split("/");
+  const params = pathname.replace("room/", "").split("/");
 
-  // Extracting parameter values from params array
-  const roomId = params[params.length - 1]; // Assuming roomId is the last segment of the path
+  // Extracting parameter values from params array liron
+  const roomId = params[1]; // Assuming roomId is the last segment of the path
 
   const handleClose = (
     event: React.SyntheticEvent | Event,
@@ -137,6 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
     if (roomId && roomsData.has(roomId)) {
       selectedRoom?.id !== roomId && selectChannel(roomId);
     } else {
+      debugger;
       navigate("/");
       setSelectedRoom(null);
     }
@@ -193,15 +195,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
           />
         </SidebarOptionList>
 
-        <SidebarOptionList>
-          <OptionContainer
-            Icon={MailIcon} // Using the mail icon
-            title={"Contact Us"}
-            onClick={() => {
-              window.location.href = "mailto:lironstavhenmta@gmail.com";
-            }}
-          />
-        </SidebarOptionList>
         <SidebarOptionList>
           <OptionContainer
             Icon={MessageIcon}
@@ -269,6 +262,15 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
                   />
                 );
               })}
+        </SidebarOptionList>
+        <SidebarOptionList>
+          <OptionContainer
+            Icon={MailIcon} // Using the mail icon
+            title={"Contact Us"}
+            onClick={() => {
+              window.location.href = "mailto:lironstavhenmta@gmail.com";
+            }}
+          />
         </SidebarOptionList>
         <SidebarOptionList>
           <OptionContainer

@@ -8,7 +8,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login from "./components/Login";
 import AboutPage from "./components/AboutPage";
-import EditRoomPage from "./components/ChatScreen/EditRoomPage";
+import RoomChatInfo from "./components/ChatScreen/RoomChatInfo";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useMediaQuery } from "@mui/material";
@@ -36,10 +36,7 @@ function App() {
               <MainContent>
                 <Routes>
                   <Route path="/" element={<HomePage />} />
-                  <Route
-                    path="/room/:roomId/members"
-                    element={<EditRoomPage />}
-                  />
+                  <Route path="/room/:roomId/info" element={<RoomChatInfo />} />
                   <Route path="/room/:roomId" element={<Chat />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="*" element={<Navigate to="/" />} />
