@@ -37,7 +37,7 @@ const Login = () => {
           className="w-[280px] rounded-xl"
         />
 
-        {/* Checkbox for Cookie Policy Agreement */}
+        {/* Checkbox for Privacy Policy Agreement */}
         <FormControlLabel
           control={
             <Checkbox
@@ -53,7 +53,7 @@ const Login = () => {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                cookie policy
+                privacy policy
               </Link>
               .
             </span>
