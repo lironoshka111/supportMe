@@ -7,7 +7,7 @@ import { ArrowLeft, LocalPolice } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import { useNavigate } from "react-router-dom";
 
-const MembersPage = () => {
+const EditRoomPage = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
 
@@ -61,4 +61,4 @@ const MembersPage = () => {
     </div>
   );
 };
-export default MembersPage;
+export default EditRoomPage;

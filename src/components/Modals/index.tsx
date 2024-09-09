@@ -1,5 +1,5 @@
 import GroupSearchModal from "./GroupSearchModal";
-import GroupFormModal from "./GroupFormModal";
+import CreateGroupFormModal from "./CreateGroupFormModal";
 import UserSettings from "./UserSettingsModal";
 
-export { GroupSearchModal, GroupFormModal, UserSettings };
+export { GroupSearchModal, CreateGroupFormModal, UserSettings };

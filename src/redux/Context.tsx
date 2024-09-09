@@ -6,12 +6,19 @@ export interface SelectedRoomType {
   title: string;
   linkToData?: string;
   favorite?: boolean;
+  onlineMeetingUrl?: string;
 }
 
 interface ContextProps {
   selectedRoom: SelectedRoomType | null;
   setSelectedRoom: (room: SelectedRoomType | null) => void;
   setFavorite: (favorite: boolean) => void;
+  groupSearchModalOpen: boolean;
+  setGroupSearchModalOpen: (open: boolean) => void;
+  newRoomModalOpen: boolean;
+  setNewRoomModalOpen: (open: boolean) => void;
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: (open: boolean) => void;
 }
 
 const AppContext = createContext<ContextProps | undefined>(undefined);
@@ -21,6 +28,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [selectedRoom, setSelectedRoomState] =
     useState<SelectedRoomType | null>(null);
+  const [newRoomModalOpen, setNewRoomModalOpen] = useState(false);
+  const [groupSearchModalOpen, setGroupSearchModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Drawer state
 
   const setSelectedRoom = (room: SelectedRoomType | null) => {
     setSelectedRoomState(room);
@@ -38,6 +48,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({
         selectedRoom,
         setSelectedRoom,
         setFavorite,
+        groupSearchModalOpen,
+        setGroupSearchModalOpen,
+        newRoomModalOpen,
+        setNewRoomModalOpen,
+        isDrawerOpen,
+        setIsDrawerOpen,
       }}
     >
       {children}

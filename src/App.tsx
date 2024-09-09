@@ -8,10 +8,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "./firebase";
 import Login, { LoginContainer } from "./components/Login";
 import AboutPage from "./components/AboutPage";
-import MembersPage from "./components/ChatScreen/MembersPage";
+import EditRoomPage from "./components/ChatScreen/EditRoomPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CircularProgress, useMediaQuery } from "@mui/material";
+import { colors } from "./theme/colors";
+import HomePage from "./components/HomePage";
 
 function App() {
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -36,8 +38,11 @@ function App() {
             {!isMobile && <Sidebar user={user} />}
             <MainContent>
               <Routes>
-                <Route path="/" element={<AboutPage />} />
-                <Route path="/room/:roomId/members" element={<MembersPage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route
+                  path="/room/:roomId/members"
+                  element={<EditRoomPage />}
+                />
                 <Route path="/room/:roomId" element={<Chat />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="*" element={<Navigate to="/" />} />
@@ -69,24 +74,14 @@ const AppContainer = styled.div`
 const AppBody = styled.div`
   display: flex;
   height: calc(100vh - 64px); /* Adjusted height to leave room for the header */
-  background-color: #e3d0d3;
+  background-color: ${colors.primary.lightCream};
 `;
 
 const MainContent = styled.div`
-  flex-grow: 1;
-  //background-color: #ffffff;
+  min-width: 0;
   padding: 20px;
+  flex-grow: 0;
   overflow-y: auto;
-`;
-
-const HomePage = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
-  height: 100%;
-  h3 {
-    font-size: 24px;
-    font-weight: 500;
-  }
 `;
